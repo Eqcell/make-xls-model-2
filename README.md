@@ -26,14 +26,14 @@ Some rules:
   - we need explicit specification of year when the forecast starts -  by 'is_forecast' vector 
       
 Simplifications/requirements:
-  critical, but not checked: 
-  - time series in rows only, horizontal orientation 
-  - dataset starts at A1 cell
-  checked:
-  - must have 'is_forecast' vector in dataset
-  not critical:
-  - datablock is next to variable labels
-  - time labels are years, not checked for continuity
+  - critical, but not checked: 
+     - time series in rows only, horizontal orientation 
+     - dataset starts at A1 cell
+  - checked:
+     - must have 'is_forecast' vector in dataset
+  - not critical:
+     - datablock is next to variable labels
+     - time labels are years, not checked for continuity
 
 Main functionality: 
 - fill cells in Excel sheet with formulas (e.g. '=C3*D4') based on 
