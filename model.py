@@ -1,41 +1,4 @@
 """
-Requirements
-------------
- - Windows machine with Microsoft Excel
- - Anaconda package suggested for libraries
- - Python 3.5 
-
-Description
------------
-
-User story: 
-  - the user wants to automate filling formulas on Excel sheet 
-  - Excel sheet has simple 'roll forward' forecast - a spreadsheet model with some 
-    historic variables and some control parameters for forecast (e.g. rates of growth) 
-  - equations link control variables and previous period historic values to forecast values
-  - equations are written down in excel sheet as text strings like 'y = y[t-1] * rog'
-  - by running the python script the user has formulas filled in the Excel where necessary
-  - the benefit is to have all model's formulas written down explicitly and not hidden in cells
-  - currently we read input Excel sheet and write output sheet to different file or different sheet,
-    but mya also write to same sheet to fill formulas
-  
- 
-Some rules: 
-  - from equations we know which variables are 'depenendent'('left-hand side')
-  - control parameters are right-hand side variables, which do no appear on left side
-  - all control variables must be supplied on sheet in dataset
-  - we need explicit specification of year when the forecast starts -  by 'is_forecast' vector 
-      
-Simplifications/requirements:
-  - critical, but not checked: 
-     - time series in rows only, horizontal orientation 
-     - dataset starts at A1 cell
-  - checked:
-     - must have 'is_forecast' vector in dataset
-  - not critical:
-     - datablock is next to variable labels
-     - time labels are years, not checked for continuity
-
 Main functionality: 
 - fill cells in Excel sheet with formulas (e.g. '=C3*D4') based on 
                     list of variable names and equations.
@@ -125,14 +88,15 @@ class FormulaSegment():
             
 class Formula():
     """
-    Holds equation string and positioning information (var_to_rows, anchor) for a
-    variable and allows to obtain corresponding Excel formula.
+    Holds equation string and positioning information (var_to_rows, anchor) for
+    dependent variable and allows to obtain corresponding Excel formula.
    
     Methods
     -------
     
     get_xl_formula(period)
     
+       Example:
        xl_ref = Formula(equation_string, var_to_rows).get_xl_formula(period = 1)
 
     """
