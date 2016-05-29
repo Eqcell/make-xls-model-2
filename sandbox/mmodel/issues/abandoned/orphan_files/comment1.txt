@@ -1,0 +1,27 @@
+"""
+TO BE CORRECTED:
+- eats cyrulic in NAMES
+
+LIMITATIONS (by design):
+- annual only
+- byRow only 
+- no var descriptions in file (pivot column needed) - NAMES
+- decimal precisions in output xls file not corrected (can be 0 and 2)
+- one model sheet per file
+- one occurrence of variable in reulting sheet (variable appearing only once)
+- decorations of dt_before_equations are hard-coded
+- no formatting in Excel file
+
+SCENARIOS
+
+     if no user specification - write all controls in orginal order,
+                              - followed by data without controls in orginal order
+                              - year depth as in historic data
+
+FLOW
+# - write to xls
+# - one input xls file
+# - larger xls file (flatten folder)
+# - experiment with actual data - full cycle (flatten folder)
+# - (source + markup) vs flattened db vs db dump
+

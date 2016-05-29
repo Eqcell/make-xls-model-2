@@ -1,0 +1,1 @@
+python mxm.py -U %*
