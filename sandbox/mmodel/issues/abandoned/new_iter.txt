@@ -1,7 +1,0 @@
-def fill_array_with_excel_formulas(ar, equations_list):    
-        variables_dict = get_variable_rows_as_dict(ar)
-        # WARNING: here we assume that all NaNs have a formula to it, wrong. 
-        for cell in yield_cells_for_filling(ar):
-            var_name = get_var_label(ar, cell[0])
-            ar[cell] = get_xl_formula(cell, var_name, equations_list, variables_dict)
-        return ar 
