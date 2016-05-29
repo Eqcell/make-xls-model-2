@@ -1,44 +1,46 @@
 Requirements
 ------------
  - Windows machine with Microsoft Excel
- - Anaconda package suggested for libraries
+ - [Anaconda](https://www.continuum.io/downloads#_windows) package suggested for libraries
  - Python 3.5 
 
-Description
------------
-
-User story: 
-  - the user wants to automate filling formulas on Excel sheet 
+User story
+----------
+  - the user wants to automate filling formulas on Excel sheet
   - Excel sheet has simple 'roll forward' forecast - a spreadsheet model with some 
-    historic variables and some control parameters for forecast (e.g. rates of growth) 
-  - equations link control variables and previous period historic values to forecast values
-  - equations are written down in excel sheet as text strings like 'y = y[t-1] * rog'
-  - by running the python script the user has formulas filled in the Excel where necessary
-  - the benefit is to have all model's formulas written down explicitly and not hidden in cells
-  - currently we read input Excel sheet and write output sheet to different file or different sheet,
-    but mya also write to same sheet to fill formulas
-  
- 
-Some rules: 
-  - from equations we know which variables are 'depenendent'('left-hand side')
-  - control parameters are right-hand side variables, which do no appear on left side
-  - all control variables must be supplied on sheet in dataset
-  - we need explicit specification of year when the forecast starts -  by 'is_forecast' vector 
-      
-Simplifications/requirements:
-  - critical, but not checked: 
-     - time series in rows only, horizontal orientation 
-     - dataset starts at A1 cell
-  - checked:
-     - must have 'is_forecast' vector in dataset
-  - not critical:
-     - datablock is next to variable labels
-     - time labels are years, not checked for continuity
+    historic values for variables and some control parameters for forecast values (e.g. rates of growth) 
+  - equations link control parameters and variables previous' period historic values to forecast values
+  - equations are written down in excel sheet as text strings like ```y = y[t-1] * rog```
 
-Main functionality: 
-- fill cells in Excel sheet with formulas (e.g. '=C3*D4') based on 
-                    list of variable names and equations.
+*The benefits:*
+  - all formulas for spreadsheet model are written down explicitly as visible text and not just hidden in cells
+  - formulas in cells are filled in the same way the user could have done it, resulting file has no extra dependencies
+  - one can easily see all control variables that govern the forecast
+
+Terms used
+----------
+- spreadsheet model
+- 'roll-forward' forecast
+- equation - formulas like ```y = y[t-1] * rog```
+- control variables, controls - variables on right-hand side of equations, which do no appear on left side of equations (e.g ```rog```)
+- dependent variables - variables on the left-hand side of equations (e.g ```rog```)
+
+
+Rules/requirements
+------------------
+ - all control variables must be supplied on sheet
+ - 'is_forecast' variable required in dataset, it is 0 for historic periods and 1 for forecast periods
+ - time series in rows only, dataset has horizontal orientation 
+ - data range starts next to variable labels and time labels
+ 
+What the script does 
+--------------------
+- fill cells in Excel sheet with formulas (e.g. '=C3*D4') based on list of variable names and equations.
 - formulas go only to forecast periods columns (where is_forecast == 1) 
+
+Example
+-------
+Excel file ```xl.xls``` has following contents:
 
 ```
 Input Excel sheet:
@@ -62,8 +64,8 @@ Output Excel sheet:
 --------------------------------
 ```
 
-Comment:
-- 'year' is not used in calculations 
+Comments:
+- 'year' is time label, it is not used in calculations 
 - 'is_forecast' denotes forecast time periods, it is 0 for historic periods, 1 for forecasted
 - 'y' is data variable
 - 'rog' is control parameter
