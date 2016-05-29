@@ -160,9 +160,9 @@ if __name__ == "__main__":
     assert is_equal(REF_DF, mos.model.get_xl_dataset()) 
     
     # end-to-end call 
-    ModelOnSheet('xl.xls').save('xl_out.xls')    
-    ModelOnSheet('xl.xls').save('xl.xls', 2)
-    # later: must check contents of output sheet to make end-to-end test complete    
+    #ModelOnSheet('xl.xls', 1, "A1").save('xl_out1.xls')    
+    #ModelOnSheet('xl.xls', 1, "A1").save('xl.xls', 3)
+    #ModelOnSheet('xl.xls', 2, "B3").save('xl_out2.xls')    
+    #ModelOnSheet('xl.xls', 2, "B3").save('xl.xls', 4) # maybe .save() .save(sheet=4)(if filename is None)
 
-
-    
+    # later: must check contents of output sheet to make end-to-end test complete - may do using
