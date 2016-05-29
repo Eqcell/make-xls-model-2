@@ -68,9 +68,3 @@ Comment:
 - 'y' is data variable
 - 'rog' is control parameter
 - 'y = y[t-1] * rog' is formula (equation)
-
-Todo later
-----------
- - code review
- - make default sheet number/name a class variable + other changes related to sheet handling
- - test 'formulas' with py.test
