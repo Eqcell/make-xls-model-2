@@ -20,7 +20,7 @@ REF_DF = DF.copy()
 REF_DF.loc[2016,'y'] = '=C3*D4'
 
 def test_segment():
-    # segment 
+    # (varname + time period) segment 
     fs = FormulaSegment("GDP[1]", {'GDP':5}, anchor = "A1")    
     assert fs.col == 1
     assert fs.row == 5
@@ -44,7 +44,7 @@ def test_math_model():
     assert is_equal(m.get_xl_dataset(), REF_DF)
 
 def test_to_matrix():
-    # standalone method
+    # standalone method - may go away if different merging is added 
     assert ModelOnSheet.to_matrix(DF) == [['', 'is_forecast', 'y', 'rog'], ['2014', '0', '85', ''], ['2015', '0', '100', ''], ['2016', '1', '', '1.05']]
    
 def test_mos():
