@@ -28,10 +28,15 @@ Terms used
 
 Rules/requirements
 ------------------
- - all control variables must be supplied on sheet
- - 'is_forecast' variable required in dataset, it is 0 for historic periods and 1 for forecast periods
  - time series in rows only, dataset has horizontal orientation 
  - data range starts next to variable labels and time labels
+ - all control variables must be supplied on sheet
+ - 'is_forecast' variable required in dataset, it is 0 for historic periods and 1 for forecast periods
+ 
+Limitations
+-----------
+- one sheet only, no multi-sheet models supported
+- variable appears on sheet only once
  
 What the script does 
 --------------------
@@ -68,5 +73,5 @@ Comments:
 - 'year' is time label, it is not used in calculations 
 - 'is_forecast' denotes forecast time periods, it is 0 for historic periods, 1 for forecasted
 - 'y' is data variable
-- 'rog' is control parameter
+- 'rog' (rate of growth) is control parameter
 - 'y = y[t-1] * rog' is formula (equation)
