@@ -2,7 +2,11 @@ import re
 import xlrd
 
 def to_xl_ref(row, col, base = 1):
-    return xlrd.colname(col-1+(base-1)) + str(row+(base-1))  
+    if base == 1:
+        return xlrd.colname(col-1) + str(row)
+    elif base == 0:
+        return xlrd.colname(col) + str(row+1)
+
 
 def col_to_num(col_str):
     """ Convert base26 column string to number. """
@@ -24,12 +28,3 @@ def is_equal(df1, df2):
     flag = df1.fillna("") ==  df2.fillna("") 
     return flag.all().all()
     
-if __name__ == "__main__":    
-    
-    # Excel references
-    assert col_to_num("A") == 1
-    assert col_to_num("B") == 2
-    assert to_xl_ref(1, 1) == "A1"
-    assert to_rowcol("A1") == (1, 1)
-    assert to_rowcol("A1", base = 0) == (0, 0)
-    assert to_rowcol("AA1") == (1, 27) 

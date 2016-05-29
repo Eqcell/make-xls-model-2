@@ -137,28 +137,6 @@ if __name__ == "__main__":
     df.iloc[0:,0:]= -1
     arr2 =  merge_df_in_array(arr, df, "D3")
 
-    # Test data     
-    COLUMNS = ['is_forecast', 'y', 'rog']   
-    VAR_TO_ROWS = {'is_forecast': 2, 'y' : 3, 'rog' : 4}
-    DF =  pd.DataFrame({  'y' : [    85,    100, np.nan],
-                        'rog' : [np.nan, np.nan,   1.05],
-                'is_forecast' : [     0,      0,      1]},
-                        index = [  2014,   2015,   2016])[COLUMNS]   
-    assert is_equal(DF, pd.read_excel('xl.xls').transpose()[COLUMNS])
-    EQS = ['y = y[t-1] * rog'] 
-    REF_DF = DF.copy()
-    REF_DF.loc[2016,'y'] = '=C3*D4'
-
-    # standalone method
-    assert ModelOnSheet.to_matrix(DF) == [['', 'is_forecast', 'y', 'rog'], ['2014', '0', '85', ''], ['2015', '0', '100', ''], ['2016', '1', '', '1.05']]
-    
-    mos = ModelOnSheet('xl.xls')
-    assert is_equal(mos.dataset, DF)
-    assert mos.var_to_rows == VAR_TO_ROWS
-    assert mos.equations == EQS
-    assert mos.model.equations['y'] == 'y[t-1] * rog'
-    assert is_equal(REF_DF, mos.model.get_xl_dataset()) 
-    
     # end-to-end call 
     #ModelOnSheet('xl.xls', 1, "A1").save('xl_out1.xls')    
     #ModelOnSheet('xl.xls', 1, "A1").save('xl.xls', 3)
