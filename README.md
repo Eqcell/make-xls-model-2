@@ -22,8 +22,8 @@ Terms used
 - spreadsheet model
 - 'roll-forward' forecast
 - equation - formulas like ```y = y[t-1] * rog```
-- control variables, controls - variables on right-hand side of equations, which do no appear on left side of equations (e.g ```rog```)
-- dependent variables - variables on the left-hand side of equations (e.g ```rog```)
+- control variables, controls - variables on right-hand side of equations, which do no appear on left side (e.g ```rog```)
+- dependent variables, dependents - variables on the left-hand side of equations (e.g ```rog```)
 
 
 Rules/requirements
@@ -32,19 +32,24 @@ Rules/requirements
  - data range starts next to variable labels and time labels
  - all control variables must be supplied on sheet
  - 'is_forecast' variable required in dataset, it is 0 for historic periods and 1 for forecast periods
- 
+ - '[t]' is reserved for indeces
+ -  time index for left hand-side variable is always [t] (not [t+1]) 
+  
 Limitations
 -----------
 - one sheet only, no multi-sheet models supported
 - variable appears on sheet only once
+- no equations for historic variables
+
  
 What the script does 
 --------------------
-- fill cells in Excel sheet with formulas (e.g. '=C3*D4') based on list of variable names and equations.
+- fill cells in Excel sheet with formulas (e.g. '=C3*D4') based on list of variable names and equations
 - formulas go only to forecast periods columns (where is_forecast == 1) 
 
 Example
 -------
+
 Excel file ```xl.xls``` has following contents:
 
 ```
