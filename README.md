@@ -12,7 +12,8 @@ User story
   - equations link control parameters and variables previous' period historic values to forecast values
   - equations are written down in excel sheet as text strings like ```y = y[t-1] * rog```
 
-*The benefits:*
+The benefits
+------------
   - all formulas for spreadsheet model are written down explicitly as visible text and not just hidden in cells
   - formulas in cells are filled in the same way the user could have done it, resulting file has no extra dependencies
   - one can easily see all control variables that govern the forecast
