@@ -40,8 +40,11 @@ Limitations
 -----------
 - one sheet only, no multi-sheet models supported
 - variable appears on sheet only once
-- no equations for historic variables
 
+**To change:**
+- no equations for historic variables
+- reads 'xls' files only
+- does not create new output files, writing to existing only
  
 What the script does 
 --------------------
@@ -81,3 +84,28 @@ Comments:
 - 'y' is data variable
 - 'rog' (rate of growth) is control parameter
 - 'y = y[t-1] * rog' is formula (equation)
+
+
+Call example
+------------
+
+todo:
+---------------------------------
+
+```
+python xl.py xl.xls
+python xl.py xl.xls input_sheet
+python xl.py xl.xls xl_out.xls output_sheet
+python xl.py xl.xls 1 xl_out.xls output_sheet
+python xl.py xl.xls 1 xl_out.xls 3
+
+```
+sheet names cannot have names ending .xls 
+consider second argument
+third is always file name
+is_xl(filname): check extension and file exists
+digits are always numbers
+how to specifiy string '1' as sheet name?
+1 and 1 are defaults for sheet numbers
+
+-----------------------------------
