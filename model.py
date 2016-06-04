@@ -1,8 +1,8 @@
 """
 Main functionality: 
-- fill cells in Excel sheet with formulas (e.g. '=C3*D4') based on 
-                    list of variable names and equations.
-- formulas go only to forecast periods columns (where is_forecast == 1) 
+- fill cells in Excel sheet with formulas (e.g. '=C3*D4') 
+  based on list of variable names and equations. Formulas 
+  go only to forecast periods columns where is_forecast == 1 
 
 ```
 Input Excel sheet:
@@ -80,11 +80,11 @@ class FormulaSegment():
         # anchor is used to calculate column offset
         # for "A1" offset is 1, which means first time period will be in column 2 (or "B")
         r, c = to_rowcol(anchor)
-        self.offset = int(c)
+        self.column_offset = int(c)
     
     def xl_ref(self):
         """Returns A1-style reference for segment, eg. 'B5', 'D20', etc. """          
-        return to_xl_ref(self.row, self.col + self.offset, base = 1)    
+        return to_xl_ref(self.row, self.col + self.column_offset, base = 1)    
             
 class Formula():
     """
@@ -143,12 +143,12 @@ class Formula():
         return text  
 
     @staticmethod    
-    def evaluate_time_indices(text, period):
+    def evaluate_time_indices(text, time_period):
         
         for time_index_expression in re.findall(T_ONLY_REGEX, text):
             try:
                 # 't' will be used inside time_index_expression                 
-                t = period
+                t = time_period
                 period_offset = eval(time_index_expression)
             except:
                 raise ValueError('Time idex expression invalid: ' + time_index_expression)
@@ -266,7 +266,7 @@ if __name__ == "__main__":
     
     from basefunc import is_equal    
     
-    # Test data     
+    # test data     
     COLUMNS = ['is_forecast', 'y', 'rog']   
     VAR_TO_ROWS = {'is_forecast': 2, 'y' : 3, 'rog' : 4}
     DF =  pd.DataFrame({  'y' : [    85,    100, np.nan],
@@ -278,19 +278,19 @@ if __name__ == "__main__":
     REF_DF = DF.copy()
     REF_DF.loc[2016,'y'] = '=C3*D4'
 
-    # segment 
+    # test segment "GDP[1]" conversion to 'B5' 
     fs = FormulaSegment("GDP[1]", {'GDP':5}, anchor = "A1")    
     assert fs.col == 1
     assert fs.row == 5
-    assert fs.offset == 1
+    assert fs.column_offset == 1
     assert fs.xl_ref() == 'B5'
 
     # formula strings converted to xl      
     pos = VAR_TO_ROWS, "A1"    
-    # 1 + 1 = B     
-    assert "=B2" == Formula('is_forecast[t]', *pos).get_xl_formula(1)
-    # 3 + 1 = D
-    assert '=C3*D4' == Formula('y[t-1] * rog', *pos).get_xl_formula(3) 
+    # time period 1 + column offset 1 = B     
+    assert "=B2" == Formula('is_forecast[t]', *pos).get_xl_formula(time_period=1)
+    # time period 3 + column offset 1 = D
+    assert '=C3*D4' == Formula('y[t-1] * rog', *pos).get_xl_formula(time_period=3) 
     # testing whitespace stripped
     assert "GDP[t]" == Formula("  GDP[t]  ", *pos).__repr__()
     
