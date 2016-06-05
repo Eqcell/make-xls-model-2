@@ -18,8 +18,18 @@ from basefunc import to_rowcol
 from model import MathModel
 
 class SheetImage():
+    """
+    Numpy array representing cells in Excel sheet, with optional anchor cell like "A1".  
+    .insert_formulas() method populates cells in forecast periods with excel formulas.
+    """
     
     def __init__(self, arr, anchor):
+        """
+        Inputs
+        ------
+        arr : numpy array  
+        anchor : string with A1 style reference, defaults to "A1"
+        """
     
         self.arr = arr
         self.anchor_rowx, self.anchor_colx = to_rowcol(anchor, base = 0)
@@ -31,7 +41,7 @@ class SheetImage():
                      .set_xl_positioning(self.var_to_rows, anchor)        
 
     def extract_dataframe(self):
-        """Return a part of 'self.arr' as dataframe.""" 
+        """Return a part of 'self.arr' starting anchor cell as dataframe.""" 
            
         data = self.arr[self.anchor_rowx:,self.anchor_colx:]
         
@@ -40,6 +50,7 @@ class SheetImage():
                          columns=data[0 ,1:])    # 1st row as the column names
 
     def insert_formulas(self):
+        """Populate formulas on array representing Excel sheet."""        
         df = self.model.get_xl_dataset()
         column_with_labels = self.arr[:,self.anchor_colx]
         for rowx, label in enumerate(column_with_labels):
@@ -48,6 +59,7 @@ class SheetImage():
         return self
                          
     def get_variable_locations_by_row(self, varlist):
+        """Return a part of 'self.arr' starting anchor cell as dataframe.""" 
         var_to_rows = {}
         column_with_labels = self.arr[:,self.anchor_colx]
         for rowx, label in enumerate(column_with_labels):
@@ -57,6 +69,8 @@ class SheetImage():
         return var_to_rows  
         
     def pop_equations(self):       
+        """Return list of strings containing equations. 
+           Also cleans self.dataset off junk non-variable columns""" 
         equations = []        
         for label in self.dataset.columns:
             if "=" in label:
@@ -68,13 +82,25 @@ class SheetImage():
 
    
 class XlSheet():
+    """Access Excel file for reading sheet and saving sheet with formulas.
     
-    def __init__(self, filepath, sheet_n = 1, anchor = 'A1'):
+    XlSheet(filename).save() will read first sheet of Excel file and populate it with formulas.
+    
+    """
+    
+    def __init__(self, filepath, sheet = 1, anchor = 'A1'):
+        """
+        Inputs
+        ------
+        filepath : valid path to Excel file, xls only, xlsx not supported
+        sheet: string or integer >=1, representing sheet name or number starting at 1, defaults to first sheet 
+        anchor : string with A1 style reference, defaults to "A1"
+        """        
     
         self.input_file_path = filepath
-        self.sheet_n = sheet_n
+        self.input_sheet = sheet
 
-        arr = self.read_sheet_as_array(filepath, sheet_n)
+        arr = self.read_sheet_as_array(filepath, sheet)
         self.image = SheetImage(arr, anchor)
     
     @staticmethod
@@ -92,10 +118,10 @@ class XlSheet():
        sheet = to_int(sheet)       
        
        if isinstance(sheet, int):
-           # we assume 'sheet' is based at 1 if it is integer   
+           # if 'sheet' is integer, we assume 'sheet' is based at 1   
            sheet_x = sheet-1
            return book.sheet_by_index(sheet_x)
-       elif isinstance(sheet, str):
+       elif isinstance(sheet, str) and sheet in book.sheet_names():
            return book.sheet_by_name(sheet)
        else:
            raise Exception("Failed to locate sheet :" + str(sheet))
@@ -121,7 +147,7 @@ class XlSheet():
         if not filepath:
             filepath = self.input_file_path
         if not sheet:
-            sheet = self.sheet_n
+            sheet = self.input_sheet
         
         def get_abspath(filepath):      
             folder = os.path.dirname(os.path.abspath(__file__))
@@ -132,15 +158,17 @@ class XlSheet():
                 # 'filepath' was long path
                 return filepath
             
+        # Workbook(path) seems to fail unless full path is provided
         abspath = get_abspath(filepath)        
         wb = Workbook(abspath)
-        # later: must check sheet_n exists
+        # not todo: must check sheet_n exists and create it if not
         Sheet(sheet).activate()
         Range("A1").value = output_array  
         wb.save()
         return self 
 
-def cli():   
+def cli():
+    """Simple command line interface to XlSheet(filepath, sheet, anchor).save()."""
     if len(sys.argv) == 1:
        raise Exception("Need at least one argument <filename>")  
     elif len(sys.argv) >= 2:
@@ -159,9 +187,7 @@ def cli():
     print("Updated formulas in " + filename + ":")
     eqs = ["    " + k + " = " + v  for k, v in xl.image.model.equations.items()]
     for e in eqs:
-        print(e)
-
-    
+        print(e)    
 
 if __name__ == "__main__":
     cli()
