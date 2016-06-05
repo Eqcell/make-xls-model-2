@@ -33,7 +33,7 @@ class SheetImage():
     
         self.arr = arr
         self.anchor_rowx, self.anchor_colx = to_rowcol(anchor, base = 0)
-
+        
         self.dataset = self.extract_dataframe().transpose()
         self.equations = self.pop_equations()
         self.var_to_rows = self.get_variable_locations_by_row(varlist=self.dataset.columns)
@@ -42,9 +42,7 @@ class SheetImage():
 
     def extract_dataframe(self):
         """Return a part of 'self.arr' starting anchor cell as dataframe.""" 
-           
         data = self.arr[self.anchor_rowx:,self.anchor_colx:]
-        
         return pd.DataFrame(data=data[1:,1:],    # values
                            index=data[1:, 0],    # 1st column as index
                          columns=data[0 ,1:])    # 1st row as the column names
@@ -55,6 +53,9 @@ class SheetImage():
         column_with_labels = self.arr[:,self.anchor_colx]
         for rowx, label in enumerate(column_with_labels):
             if label in df.columns:
+                print(label)
+                print(self.arr[rowx,self.anchor_colx+1:])
+                print(df[label].as_matrix())
                 self.arr[rowx,self.anchor_colx+1:] = df[label].as_matrix()
         return self
                          
@@ -71,13 +72,21 @@ class SheetImage():
     def pop_equations(self):       
         """Return list of strings containing equations. 
            Also cleans self.dataset off junk non-variable columns""" 
-        equations = []        
+        equations = []  
+        
+        def drop(label):
+            if label in self.dataset.columns:
+                self.dataset.drop(label, 1)
+        
         for label in self.dataset.columns:
             if "=" in label:
                 equations.append(label)
-                self.dataset = self.dataset.drop(label, 1)
-            elif " " in label.strip():
-                self.dataset = self.dataset.drop(label, 1)
+                drop(label)
+            elif (" " in label.strip() 
+                  or len(label)==0
+                  or label.strip().startswith("#")):
+                print(label)      
+                drop(label)
         return equations       
 
    
@@ -99,6 +108,7 @@ class XlSheet():
     
         self.input_file_path = filepath
         self.input_sheet = sheet
+        self.input_anchor = anchor 
 
         arr = self.read_sheet_as_array(filepath, sheet)
         self.image = SheetImage(arr, anchor)

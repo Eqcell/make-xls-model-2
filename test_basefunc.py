@@ -13,5 +13,6 @@ def test_basefunc():
     assert to_xl_ref(1, 1, base = 1) == "A1"
     assert to_xl_ref(0, 0, base = 0) == "A1"    
     assert to_rowcol("A1") == (1, 1)
+    assert to_rowcol("A1") == to_rowcol("a1")
     assert to_rowcol("A1", base = 0) == (0, 0)
     assert to_rowcol("AA1") == (1, 27)

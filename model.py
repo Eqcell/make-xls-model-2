@@ -112,6 +112,7 @@ class Formula():
         """
         
         self.equation_string = self.strip_all_whitespace(equation_string)
+        print(self.equation_string)
         self.equation_string = self.expand_shorthand(self.equation_string, var_to_rows)
         self.var_to_rows = var_to_rows 
         self.anchor = anchor

@@ -1,3 +1,5 @@
+import os
+
 from basefunc import is_equal
 from xl import XlSheet
  
@@ -25,3 +27,4 @@ def test_xl_sheet_end_to_end():
     df3 = XlSheet(PATH, sheet=3, anchor="A1").image.dataset
     df4 = XlSheet(PATH, sheet=4, anchor="B3").image.dataset  
     assert is_equal(df3, df4)   
+    
