@@ -120,6 +120,25 @@ class XlSheet():
         return self 
 
 
+"""
+python xl.py xl.xls
+python xl.py xl.xls input_sheet
+python xl.py xl.xls xl_out.xls output_sheet
+python xl.py xl.xls 1 xl_out.xls output_sheet
+python xl.py xl.xls 1 xl_out.xls 3
+
+```
+sheet names cannot have names ending .xls 
+consider second argument
+third is always file name
+is_xl(filname): check extension and file exists
+digits are always numbers
+how to specifiy string '1' as sheet name?
+1 and 1 are defaults for sheet numbers
+"""
+
+
+
 if __name__ == "__main__":
     
     from basefunc import is_equal  
