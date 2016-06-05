@@ -15,132 +15,128 @@ import os
 from basefunc import to_rowcol
 from model import MathModel
 
-class ModelOnSheet():
-    """
-    Import inputs from Excel model sheet and write back formulas to it.
-    Interface between class Model() and Excel file.
+class SheetImage():
     
-    Typical use:
+    def __init__(self, arr, anchor):
     
-    Sheet("xl.xls").save("xl_out.xls")
-    
-    """
-    
-    def __init__(self, filepath, sheet = 0, anchor = 'A1'):
+        self.arr = arr
+        self.anchor_rowx, self.anchor_colx = to_rowcol(anchor, base = 0)
+
+        self.dataset = self.extract_dataframe().transpose()
+        self.equations = self.pop_equations()
+        self.var_to_rows = self.get_variable_locations_by_row(varlist=self.dataset.columns)
+        self.model = MathModel(self.dataset, self.equations)\
+                     .set_xl_positioning(self.var_to_rows, anchor)        
+
+    def extract_dataframe(self):
+        """Return a part of 'self.arr' as dataframe.""" 
+           
+        data = self.arr[self.anchor_rowx:,self.anchor_colx:]
         
-        self._readsheet(filepath, sheet)        
-        self.model = MathModel(self.dataset, self.equations).set_xl_positioning(self.var_to_rows)        
-        self._merge_formulas(self.model.get_xl_dataset())        
-    
-    def _readsheet(self, filepath, sheet):
+        return pd.DataFrame(data=data[1:,1:],    # values
+                           index=data[1:, 0],    # 1st column as index
+                         columns=data[0 ,1:])    # 1st row as the column names
+
+    def insert_formulas(self):
+        df = self.model.get_xl_dataset()
+        column_with_labels = self.arr[:,self.anchor_colx]
+        for rowx, label in enumerate(column_with_labels):
+            if label in df.columns:
+                self.arr[rowx,self.anchor_colx+1:] = df[label].as_matrix()
+        return self
+                         
+    def get_variable_locations_by_row(self, varlist):
+        var_to_rows = {}
+        column_with_labels = self.arr[:,self.anchor_colx]
+        for rowx, label in enumerate(column_with_labels):
+            if label in varlist:
+                # +1 to rebase from 0  
+                var_to_rows[label] = rowx + 1        
+        return var_to_rows  
         
-        # all sheet content       
-        self.image_df = pd.read_excel(filepath, sheet) 
-        
-        # dataset
-        self.dataset = self.image_df.transpose()
-        
-        # equations
-        self.equations = []        
+    def pop_equations(self):       
+        equations = []        
         for label in self.dataset.columns:
             if "=" in label:
-                self.equations.append(label)
+                equations.append(label)
                 self.dataset = self.dataset.drop(label, 1)
             elif " " in label.strip():
                 self.dataset = self.dataset.drop(label, 1)
-               
-        # var to rows        
-        # +1 for rebasing from 0 and +1 for header            
-        self.var_to_rows = {l:i+1+1 for i, l in enumerate(self.image_df.index)}
-        self.var_to_rows = {k:self.var_to_rows[k] for k in self.dataset.columns}
-  
-    def _merge_formulas(self, xl_dataset):
-        self.image_df = self.image_df.transpose()
-        for col in xl_dataset.columns:
-            self.image_df[col]=xl_dataset[col]
-        self.image_df = self.image_df.transpose().fillna("")
+        return equations       
+
+   
+class XlSheet():
     
-    def save(self, filepath, sheet_n = 1):
-        # later: filename may be not provided, must write to input sheet 
+    def __init__(self, filepath, sheet_n = 1, anchor = 'A1'):
+    
+        self.input_file_path = filepath
+        self.sheet_n = sheet_n
+
+        # warning: will not accept sheet names as strings
+        #          may need sheet names to sheet numbers converter
+        arr = self.read_sheet_as_array(filepath, sheet_x=sheet_n-1)
+        self.image = SheetImage(arr, anchor)
+    
+    @staticmethod
+    def read_sheet_as_array(filename, sheet_x=0):
+        """Read sheet_x-th sheet from an Excel file into an numpy's ndarray"""
+        contentstring = open(filename, 'rb').read()
+        book  = xlrd.open_workbook(file_contents=contentstring)
+        sheet = book.sheets()[sheet_x]
+        array = np.empty((sheet.nrows,sheet.ncols), dtype=object)
+        for row in range(sheet.nrows):
+            for col in range(sheet.ncols):
+                value = sheet.cell(row, col).value
+                # force type to 'int' where possible
+                if isinstance(value, float) and round(value) == value:
+                    value = int(value)                
+                array[row][col] = value
+        return array
+
+    def save(self, filepath=None, sheet=None):
+
+        output_array = self.image.insert_formulas().arr
+        
+        if not filepath:
+            filepath = self.input_file_path
+        if not sheet:
+            sheet = self.sheet_n
         
         def get_abspath(filepath):      
             folder = os.path.dirname(os.path.abspath(__file__))
             if not os.path.split(filepath)[0]:
-                # provided filepath is file name only  
+                # 'filepath' was file name only  
                 return os.path.join(folder, filepath)
             else:
-                # provided filepath is long path
+                # 'filepath' was long path
                 return filepath
             
         abspath = get_abspath(filepath)        
         wb = Workbook(abspath)
         # later: must check sheet_n exists
-        Sheet(sheet_n).activate()
-        # later: move 'A1' to CORNER_CELL = 'A1'
-        Range(sheet_n, 'A1').value = self.to_matrix(self.image_df)
+        Sheet(sheet).activate()
+        Range("A1").value = output_array  
         wb.save()
-        
-    @staticmethod    
-    def to_matrix(df): 
-        df = df.fillna("")
-        line0 = [""] +  df.columns.tolist()
-        lines = [line0]
-        for ix in df.index:
-           def to_int(x):
-               if type(x) == float and round(x) == x:
-                   return int(x)
-               else:
-                   return x
-           row = [to_int(x) for x in df.loc[ix,].tolist()] 
-           lines.append([ix] + row) 
-        return [[str(x) for x in line] for line in lines]    
+        return self 
 
-    
-def read_sheet_as_array(filename, n=0):
-    """Converts n-th sheet from an Excel file into an ndarray"""
-    contentstring = open(filename, 'rb').read()
-    book  = xlrd.open_workbook(file_contents=contentstring)
-    sheet = book.sheets()[n]
-    array = np.empty((sheet.ncols, sheet.nrows), dtype=object)
-    
-    for row in range(sheet.nrows):
-        for col in range(sheet.ncols):
-            value = sheet.cell(row, col).value
-            # force type to 'int' where possible
-            if isinstance(value, float) and round(value) == value:
-                value = int(value)                
-            array[row][col] = value
-    
-    return array
-    
-def read_range_as_df(filename, n=0, anchor="A1"):
-
-    arr = read_sheet_as_array("xl2.xls")
-    r, c = to_rowcol(anchor, base = 0)
-    data = arr[r:,c:]
-    
-    return pd.DataFrame(data=data[1:,1:],    # values
-                    index=data[1:, 0],    # 1st column as index
-                  columns=data[0 ,1:])  # 1st row as the column names
-
-def merge_df_in_array(arr, df, anchor):
-    r, c = to_rowcol(anchor, base = 0)
-    arr[r+1:,c+1:] = df.as_matrix()
-    return arr 
 
 if __name__ == "__main__":
     
-    from basefunc import is_equal   
+    from basefunc import is_equal  
+
+    df1 = XlSheet("xl.xls", sheet_n=1, anchor="A1").image.dataset
+    df2 = XlSheet("xl.xls", sheet_n=2, anchor="B3").image.dataset    
+    assert is_equal(df2, df1)
     
-    arr = read_sheet_as_array("xl2.xls", n=0)
-    df = read_range_as_df("xl2.xls", n=0, anchor="D3")
-    df.iloc[0:,0:]= -1
-    arr2 =  merge_df_in_array(arr, df, "D3")
+    xl = XlSheet('xl.xls', 1, "A1")
+    arr = xl.image.insert_formulas().arr
+    
+    XlSheet('xl.xls', 1, "A1").save(sheet=3)
+    xl2 = XlSheet('xl.xls', 2, "B3").save(sheet=4)
 
-    # end-to-end call 
-    #ModelOnSheet('xl.xls', 1, "A1").save('xl_out1.xls')    
-    #ModelOnSheet('xl.xls', 1, "A1").save('xl.xls', 3)
-    #ModelOnSheet('xl.xls', 2, "B3").save('xl_out2.xls')    
-    #ModelOnSheet('xl.xls', 2, "B3").save('xl.xls', 4) # maybe .save() .save(sheet=4)(if filename is None)
+    def read_range_as_df(filename, sheet_n, anchor):
+         return XlSheet(filename, sheet_n, anchor).image.dataset
 
-    # later: must check contents of output sheet to make end-to-end test complete - may do using
+    df3 = read_range_as_df("xl.xls", sheet_n=3, anchor="A1")
+    df4 = read_range_as_df("xl.xls", sheet_n=4, anchor="B3")  
+    assert is_equal(df3, df4)

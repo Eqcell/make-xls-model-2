@@ -116,9 +116,9 @@ class Formula():
         self.var_to_rows = var_to_rows 
         self.anchor = anchor
         
-    def get_xl_formula(self, period):  
+    def get_xl_formula(self, time_period):  
         
-        indexed_equation = self.evaluate_time_indices(self.equation_string, period)         
+        indexed_equation = self.evaluate_time_indices(self.equation_string, time_period)         
 
         segments = re.findall(SEGMENT_REGEX, indexed_equation)   
         for seg_text in segments:
@@ -237,7 +237,7 @@ class MathModel():
         """
 
         self.var_to_rows = var_to_rows
-        self.anchor =  anchor
+        self.anchor = anchor
         self._validate_positioning()
         return self 
         
@@ -255,9 +255,11 @@ class MathModel():
             # .. go over forecast time periods... 
             for i in forecast_index_positions:
                # .... and assign formulas in xl_dataset
-               period_based_at_1 = i + 1
+               period_n = i + 1
                xl_dataset.loc[xl_dataset.index[i], varname] = \
-                        Formula(equation, self.var_to_rows).get_xl_formula(period_based_at_1)
+                        Formula(equation, 
+                                self.var_to_rows,
+                                self.anchor).get_xl_formula(period_n)
                         
         return xl_dataset
                        
