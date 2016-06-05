@@ -5,6 +5,8 @@ Created on Sun May 29 09:12:29 2016
 @author: Евгений
 """
 
+import sys
+
 import numpy as np
 import pandas as pd
 
@@ -72,17 +74,36 @@ class XlSheet():
         self.input_file_path = filepath
         self.sheet_n = sheet_n
 
-        # warning: will not accept sheet names as strings
-        #          may need sheet names to sheet numbers converter
-        arr = self.read_sheet_as_array(filepath, sheet_x=sheet_n-1)
+        arr = self.read_sheet_as_array(filepath, sheet_n)
         self.image = SheetImage(arr, anchor)
     
     @staticmethod
-    def read_sheet_as_array(filename, sheet_x=0):
-        """Read sheet_x-th sheet from an Excel file into an numpy's ndarray"""
-        contentstring = open(filename, 'rb').read()
-        book  = xlrd.open_workbook(file_contents=contentstring)
-        sheet = book.sheets()[sheet_x]
+    def get_xlrd_sheet(filename, sheet):
+       
+       contentstring = open(filename, 'rb').read()
+       book = xlrd.open_workbook(file_contents=contentstring)
+       
+       def to_int(s):
+           try:
+               return int(s)
+           except ValueError:
+               return s
+
+       sheet = to_int(sheet)       
+       
+       if isinstance(sheet, int):
+           # we assume 'sheet' is based at 1 if it is integer   
+           sheet_x = sheet-1
+           return book.sheet_by_index(sheet_x)
+       elif isinstance(sheet, str):
+           return book.sheet_by_name(sheet)
+       else:
+           raise Exception("Failed to locate sheet :" + str(sheet))
+
+    @staticmethod
+    def read_sheet_as_array(filename, sheet):
+        """Read sheet from an Excel file into an numpy's ndarray."""        
+        sheet = XlSheet.get_xlrd_sheet(filename, sheet)        
         array = np.empty((sheet.nrows,sheet.ncols), dtype=object)
         for row in range(sheet.nrows):
             for col in range(sheet.ncols):
@@ -119,43 +140,28 @@ class XlSheet():
         wb.save()
         return self 
 
+def cli():   
+    if len(sys.argv) == 1:
+       raise Exception("Need at least one argument <filename>")  
+    elif len(sys.argv) >= 2:
+        filename = sys.argv[1]
+        xl = XlSheet(filename)
+    elif len(sys.argv) == 3:
+        filename = sys.argv[1]
+        sheet = int(sys.argv[2])
+        xl = XlSheet(filename, sheet)
+    elif len(sys.argv) == 4:        
+        filename = sys.argv[1]
+        sheet = int(sys.argv[2])
+        anchor = sys.argv[3]
+        xl = XlSheet(filename, sheet, anchor)
+    xl = xl.save()
+    print("Updated formulas in " + filename + ":")
+    eqs = ["    " + k + " = " + v  for k, v in xl.image.model.equations.items()]
+    for e in eqs:
+        print(e)
 
-"""
-python xl.py xl.xls
-python xl.py xl.xls input_sheet
-python xl.py xl.xls xl_out.xls output_sheet
-python xl.py xl.xls 1 xl_out.xls output_sheet
-python xl.py xl.xls 1 xl_out.xls 3
-
-```
-sheet names cannot have names ending .xls 
-consider second argument
-third is always file name
-is_xl(filname): check extension and file exists
-digits are always numbers
-how to specifiy string '1' as sheet name?
-1 and 1 are defaults for sheet numbers
-"""
-
-
+    
 
 if __name__ == "__main__":
-    
-    from basefunc import is_equal  
-
-    df1 = XlSheet("xl.xls", sheet_n=1, anchor="A1").image.dataset
-    df2 = XlSheet("xl.xls", sheet_n=2, anchor="B3").image.dataset    
-    assert is_equal(df2, df1)
-    
-    xl = XlSheet('xl.xls', 1, "A1")
-    arr = xl.image.insert_formulas().arr
-    
-    XlSheet('xl.xls', 1, "A1").save(sheet=3)
-    xl2 = XlSheet('xl.xls', 2, "B3").save(sheet=4)
-
-    def read_range_as_df(filename, sheet_n, anchor):
-         return XlSheet(filename, sheet_n, anchor).image.dataset
-
-    df3 = read_range_as_df("xl.xls", sheet_n=3, anchor="A1")
-    df4 = read_range_as_df("xl.xls", sheet_n=4, anchor="B3")  
-    assert is_equal(df3, df4)
+    cli()

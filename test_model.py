@@ -14,7 +14,7 @@ DF =  pd.DataFrame({  'y' : [    85,    100, np.nan],
                     'rog' : [np.nan, np.nan,   1.05],
             'is_forecast' : [     0,      0,      1]},
                     index = [  2014,   2015,   2016])[COLUMNS]   
-assert is_equal(DF, pd.read_excel('xl.xls').transpose()[COLUMNS])
+assert is_equal(DF, pd.read_excel('test1.xls').transpose()[COLUMNS])
 EQS = ['y = y[t-1] * rog'] 
 REF_DF = DF.copy()
 REF_DF.loc[2016,'y'] = '=C3*D4'
@@ -45,7 +45,8 @@ def test_math_model():
     assert is_equal(m.get_xl_dataset(), REF_DF)
     
 def test_model_on_sheet():
-    mos = XlSheet('xl.xls').image
+    from test_xl import PATH
+    mos = XlSheet(PATH).image
     assert is_equal(mos.dataset, DF)
     assert mos.var_to_rows == VAR_TO_ROWS
     assert mos.equations == EQS
