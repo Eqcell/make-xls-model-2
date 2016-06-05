@@ -7,9 +7,9 @@ Requirements
 User story
 ----------
   - the user wants to automate filling formulas on Excel sheet
-  - Excel sheet has simple 'roll forward' forecast - a spreadsheet model with some 
-    historic values for variables and some control parameters for forecast values (e.g. rates of growth) 
-  - equations link control parameters and variables previous' period historic values to forecast values
+  - Excel spreadsheet has simple 'roll forward' forecast model: future values are linked to observed values by 
+    control parameters (e.g. rates of growth, elasticities, etc) 
+  - equations link control parameters and variables previous' period observed values to forecast values
   - equations are written down in excel sheet as text strings like ```y = y[t-1] * rog```
 
 The benefits
@@ -20,9 +20,8 @@ The benefits
 
 Terms used
 ----------
-- spreadsheet model
-- 'roll-forward' forecast
-- equation - formulas like ```y = y[t-1] * rog```
+- spreadsheet model, 'roll-forward' forecast
+- equation - formula like ```y = y[t-1] * rog```
 - control variables, controls - variables on right-hand side of equations, which do no appear on left side (e.g ```rog```)
 - dependent variables, dependents - variables on the left-hand side of equations (e.g ```rog```)
 
@@ -34,14 +33,14 @@ Rules/requirements
  - all control variables must be supplied on sheet
  - 'is_forecast' variable required in dataset, it is 0 for historic periods and 1 for forecast periods
  - '[t]' is reserved for indeces
- -  time index for left hand-side variable is always [t] (not [t+1]) 
+ -  time index for left hand-side variable is always ```[t]``` (not ```[t+1]```) 
   
 Limitations
 -----------
 - one sheet only, no multi-sheet models supported
 - variable appears on sheet only once
 
-**To change:**
+**May change:**
 - no equations for historic variables
 - reads 'xls' files only
 - does not create new output files, writing to existing only
@@ -54,7 +53,7 @@ What the script does
 Example
 -------
 
-Excel file ```xl.xls``` has following contents:
+Excel sheet has following contents before and after applying formulas:
 
 ```
 Input Excel sheet:
@@ -80,32 +79,28 @@ Output Excel sheet:
 
 Comments:
 - 'year' is time label, it is not used in calculations 
-- 'is_forecast' denotes forecast time periods, it is 0 for historic periods, 1 for forecasted
+- 'is_forecast' denotes forecast time periods, it is 0 for historic periods, 1 for forecast
 - 'y' is data variable
 - 'rog' (rate of growth) is control parameter
 - 'y = y[t-1] * rog' is formula (equation)
 
-
-Call example
-------------
-
-todo:
----------------------------------
-
+Programming entry point
+-----------------------
+```python
+from xl import XlSheet
+XlSheet(filename="test1.xls", sheet="input_sheet_v1", anchor="A1").save(sheet="output_v2")
 ```
-python xl.py xl.xls
-python xl.py xl.xls input_sheet
-python xl.py xl.xls xl_out.xls output_sheet
-python xl.py xl.xls 1 xl_out.xls output_sheet
-python xl.py xl.xls 1 xl_out.xls 3
 
+Command line call 
+-----------------
 ```
-sheet names cannot have names ending .xls 
-consider second argument
-third is always file name
-is_xl(filname): check extension and file exists
-digits are always numbers
-how to specifiy string '1' as sheet name?
-1 and 1 are defaults for sheet numbers
+python xl.py <filname> <sheet> <anchor>
+   <filename>: filename ot path to .xls file
+   <sheet>: string representing sheet name or integer based at 1, defaults to first sheet in file  
+   <anchor>: string with A1 style reference pointing to start of datablock on sheet, defaults to "A1"
 
------------------------------------
+python xl.py test0.xls
+python xl.py test0.xls 1 A1
+python xl.py test0.xls sheet1 A1
+```
+
