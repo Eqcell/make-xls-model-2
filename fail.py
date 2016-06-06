@@ -5,7 +5,8 @@ from model import Formula
 
 
 # PROBLEM 1
-assert 'FondOT[t]+FondOther[t]' == Formula.expand_shorthand("FondOT+FondOther", {"FondOT":0,"FondOther":1})
+assert 'FondOT[t]+FondOther[t]' == Formula.expand_shorthand(
+    "FondOT+FondOther", {"FondOT": 0, "FondOther": 1})
      
      
 # PROBLEM 2     

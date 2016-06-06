@@ -58,7 +58,7 @@ SEGMENT_REGEX = r'(\w+\[\d+\])'
 VAR_PERIOD_REGEX = r'(\w+)\[(\d+)\]' 
 
 
-class FormulaSegment():
+class FormulaSegment(object):
     
     def __init__(self, seg_text, var_to_rows, anchor): 
         """
@@ -84,9 +84,10 @@ class FormulaSegment():
     
     def xl_ref(self):
         """Returns A1-style reference for segment, eg. 'B5', 'D20', etc. """          
-        return to_xl_ref(self.row, self.col + self.column_offset, base = 1)    
-            
-class Formula():
+        return to_xl_ref(self.row, self.col + self.column_offset, base=1)
+
+
+class Formula(object):
     """
     Holds equation string and positioning information (var_to_rows, anchor) for
     dependent variable and allows to obtain corresponding Excel formula.
@@ -101,7 +102,7 @@ class Formula():
 
     """
     
-    def __init__(self, equation_string, var_to_rows, anchor = "A1"):
+    def __init__(self, equation_string, var_to_rows, anchor="A1"):
         """
         Parameters
         ----------
@@ -124,7 +125,7 @@ class Formula():
         segments = re.findall(SEGMENT_REGEX, indexed_equation)   
         for seg_text in segments:
              xl_ref = FormulaSegment(seg_text, self.var_to_rows, self.anchor).xl_ref()
-             rx = r'\b' + re.escape(seg_text) # match beginning of word  
+             rx = r'\b' + re.escape(seg_text)  # match beginning of word
              indexed_equation = re.sub(rx, xl_ref, indexed_equation)
         return '=' + indexed_equation
         
@@ -155,10 +156,11 @@ class Formula():
                 raise ValueError('Time idex expression invalid: ' + time_index_expression)
             
             text = text.replace('[' + time_index_expression + ']', 
-                                '[' + str(period_offset)    + ']')
+                                '[' + str(period_offset) + ']')
         return text         
 
-class Equations():
+
+class Equations(object):
     
     def __init__(self, equation_strings):
         
@@ -177,7 +179,7 @@ class Equations():
     @staticmethod    
     def parse_equation_string(string):
         left_hand_side_expression, formula = string.split('=')
-        varname = left_hand_side_expression.replace(" ","").replace("[t]", "")    
+        varname = left_hand_side_expression.replace(" ", "").replace("[t]", "")
         return varname, formula                     
 
     @staticmethod    
@@ -187,7 +189,8 @@ class Equations():
                          "\nExisting equation: " + eq1 +
                          "\nAlternative equation: " + eq2)
 
-class MathModel():
+
+class MathModel(object):
     """    
     Fill dataframe with formulas containing A1 cell references based on 
     equations and variable locations on Excel sheet. 
@@ -225,7 +228,7 @@ class MathModel():
         #    verify if all required row locations were supplied
         pass
 
-    def set_xl_positioning(self, var_to_rows, anchor = "A1"):
+    def set_xl_positioning(self, var_to_rows, anchor="A1"):
         """
         Provide positoiing information about variable locations in rows ('var_to_rows') 
         and overall dataframe range location ('anchor').         
@@ -255,12 +258,10 @@ class MathModel():
             equation = self.equations[varname]
             # .. go over forecast time periods... 
             for i in forecast_index_positions:
-               # .... and assign formulas in xl_dataset
-               period_n = i + 1
-               xl_dataset.loc[xl_dataset.index[i], varname] = \
-                        Formula(equation, 
-                                self.var_to_rows,
-                                self.anchor).get_xl_formula(period_n)
+                # .... and assign formulas in xl_dataset
+                period_n = i + 1
+                xl_dataset.loc[xl_dataset.index[i], varname] = Formula(
+                    equation, self.var_to_rows, self.anchor).get_xl_formula(period_n)
                         
         return xl_dataset
                        
@@ -271,18 +272,18 @@ if __name__ == "__main__":
     
     # test data     
     COLUMNS = ['is_forecast', 'y', 'rog']   
-    VAR_TO_ROWS = {'is_forecast': 2, 'y' : 3, 'rog' : 4}
-    DF =  pd.DataFrame({  'y' : [    85,    100, np.nan],
-                        'rog' : [np.nan, np.nan,   1.05],
-                'is_forecast' : [     0,      0,      1]},
-                        index = [  2014,   2015,   2016])[COLUMNS]   
+    VAR_TO_ROWS = {'is_forecast': 2, 'y': 3, 'rog': 4}
+    DF = pd.DataFrame({'y':           [85, 100, np.nan],
+                       'rog':         [np.nan, np.nan,   1.05],
+                       'is_forecast': [0, 0, 1]},
+                      index=[2014, 2015, 2016])[COLUMNS]
     assert is_equal(DF, pd.read_excel('xl.xls').transpose()[COLUMNS])
     EQS = ['y = y[t-1] * rog'] 
     REF_DF = DF.copy()
-    REF_DF.loc[2016,'y'] = '=C3*D4'
+    REF_DF.loc[2016, 'y'] = '=C3*D4'
 
     # test segment "GDP[1]" conversion to 'B5' 
-    fs = FormulaSegment("GDP[1]", {'GDP':5}, anchor = "A1")    
+    fs = FormulaSegment("GDP[1]", {'GDP': 5}, anchor="A1")
     assert fs.col == 1
     assert fs.row == 5
     assert fs.column_offset == 1
@@ -298,6 +299,6 @@ if __name__ == "__main__":
     assert "GDP[t]" == Formula("  GDP[t]  ", *pos).__repr__()
     
     # model with no Excel, local variables only
-    m = MathModel(equations = EQS, dataset = DF)
-    m.set_xl_positioning(var_to_rows = VAR_TO_ROWS)
+    m = MathModel(equations=EQS, dataset=DF)
+    m.set_xl_positioning(var_to_rows=VAR_TO_ROWS)
     assert is_equal(m.get_xl_dataset(), REF_DF)
