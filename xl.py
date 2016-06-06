@@ -1,8 +1,7 @@
-# -*- coding: utf-8 -*-
 """
 Created on Sun May 29 09:12:29 2016
 
-@author: Евгений
+@author: Evgeny
 """
 
 import sys
@@ -17,7 +16,8 @@ import os
 from basefunc import to_rowcol
 from model import MathModel
 
-class SheetImage():
+
+class SheetImage(object):
     """
     Numpy array representing cells in Excel sheet, with optional anchor cell like "A1".  
     .insert_formulas() method populates cells in forecast periods with excel formulas.
@@ -32,37 +32,37 @@ class SheetImage():
         """
     
         self.arr = arr
-        self.anchor_rowx, self.anchor_colx = to_rowcol(anchor, base = 0)
+        self.anchor_rowx, self.anchor_colx = to_rowcol(anchor, base=0)
         
         self.dataset = self.extract_dataframe().transpose()
         self.equations = self.pop_equations()
         self.var_to_rows = self.get_variable_locations_by_row(varlist=self.dataset.columns)
-        self.model = MathModel(self.dataset, self.equations)\
-                     .set_xl_positioning(self.var_to_rows, anchor)        
+        self.model = MathModel(self.dataset, self.equations).set_xl_positioning(
+            self.var_to_rows, anchor)
 
     def extract_dataframe(self):
         """Return a part of 'self.arr' starting anchor cell as dataframe.""" 
-        data = self.arr[self.anchor_rowx:,self.anchor_colx:]
-        return pd.DataFrame(data=data[1:,1:],    # values
-                           index=data[1:, 0],    # 1st column as index
-                         columns=data[0 ,1:])    # 1st row as the column names
+        data = self.arr[self.anchor_rowx:, self.anchor_colx:]
+        return pd.DataFrame(data=data[1:, 1:],    # values
+                            index=data[1:, 0],    # 1st column as index
+                            columns=data[0, 1:])    # 1st row as the column names
 
     def insert_formulas(self):
         """Populate formulas on array representing Excel sheet."""        
         df = self.model.get_xl_dataset()
-        column_with_labels = self.arr[:,self.anchor_colx]
+        column_with_labels = self.arr[:, self.anchor_colx]
         for rowx, label in enumerate(column_with_labels):
             if label in df.columns:
                 print(label)
-                print(self.arr[rowx,self.anchor_colx+1:])
+                print(self.arr[rowx, self.anchor_colx + 1:])
                 print(df[label].as_matrix())
-                self.arr[rowx,self.anchor_colx+1:] = df[label].as_matrix()
+                self.arr[rowx, self.anchor_colx + 1:] = df[label].as_matrix()
         return self
                          
     def get_variable_locations_by_row(self, varlist):
         """Return a part of 'self.arr' starting anchor cell as dataframe.""" 
         var_to_rows = {}
-        column_with_labels = self.arr[:,self.anchor_colx]
+        column_with_labels = self.arr[:, self.anchor_colx]
         for rowx, label in enumerate(column_with_labels):
             if label in varlist:
                 # +1 to rebase from 0  
@@ -83,21 +83,21 @@ class SheetImage():
                 equations.append(label)
                 drop(label)
             elif (" " in label.strip() 
-                  or len(label)==0
+                  or len(label) == 0
                   or label.strip().startswith("#")):
                 print(label)      
                 drop(label)
         return equations       
 
    
-class XlSheet():
+class XlSheet(object):
     """Access Excel file for reading sheet and saving sheet with formulas.
     
     XlSheet(filename).save() will read first sheet of Excel file and populate it with formulas.
     
     """
     
-    def __init__(self, filepath, sheet = 1, anchor = 'A1'):
+    def __init__(self, filepath, sheet=1, anchor='A1'):
         """
         Inputs
         ------
@@ -116,25 +116,25 @@ class XlSheet():
     @staticmethod
     def get_xlrd_sheet(filename, sheet):
        
-       contentstring = open(filename, 'rb').read()
-       book = xlrd.open_workbook(file_contents=contentstring)
-       
-       def to_int(s):
-           try:
-               return int(s)
-           except ValueError:
-               return s
+        contentstring = open(filename, 'rb').read()
+        book = xlrd.open_workbook(file_contents=contentstring)
 
-       sheet = to_int(sheet)       
-       
-       if isinstance(sheet, int):
-           # if 'sheet' is integer, we assume 'sheet' is based at 1   
-           sheet_x = sheet-1
-           return book.sheet_by_index(sheet_x)
-       elif isinstance(sheet, str) and sheet in book.sheet_names():
-           return book.sheet_by_name(sheet)
-       else:
-           raise Exception("Failed to locate sheet :" + str(sheet))
+        def to_int(s):
+            try:
+                return int(s)
+            except ValueError:
+                return s
+
+        sheet = to_int(sheet)
+
+        if isinstance(sheet, int):
+            # if 'sheet' is integer, we assume 'sheet' is based at 1
+            sheet_x = sheet - 1
+            return book.sheet_by_index(sheet_x)
+        elif isinstance(sheet, str) and sheet in book.sheet_names():
+            return book.sheet_by_name(sheet)
+        else:
+            raise Exception("Failed to locate sheet :" + str(sheet))
 
     @staticmethod
     def read_sheet_as_array(filename, sheet):
@@ -177,10 +177,11 @@ class XlSheet():
         wb.save()
         return self 
 
+
 def cli():
     """Simple command line interface to XlSheet(filepath, sheet, anchor).save()."""
     if len(sys.argv) == 1:
-       raise Exception("Need at least one argument <filename>")  
+        raise Exception("Need at least one argument <filename>")
     elif len(sys.argv) >= 2:
         filename = sys.argv[1]
         xl = XlSheet(filename)
@@ -195,7 +196,7 @@ def cli():
         xl = XlSheet(filename, sheet, anchor)
     xl = xl.save()
     print("Updated formulas in " + filename + ":")
-    eqs = ["    " + k + " = " + v  for k, v in xl.image.model.equations.items()]
+    eqs = ["    " + k + " = " + v for k, v in xl.image.model.equations.items()]
     for e in eqs:
         print(e)    
 
