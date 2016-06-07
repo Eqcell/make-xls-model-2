@@ -1,7 +1,7 @@
 import os
-from xl import XlSheet
-     
-from model import Formula
+
+from xlsmodel.xl import XlSheet
+from xlsmodel.model import Formula
 
 
 # PROBLEM 1

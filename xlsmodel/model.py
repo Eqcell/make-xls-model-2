@@ -41,12 +41,14 @@ Todo later
 
 """
 
-import pandas as pd
-import numpy as np
 from collections import OrderedDict
 import re
 
-from basefunc import to_rowcol, to_xl_ref
+import pandas as pd
+import numpy as np
+
+from xlsmodel.basefunc import to_rowcol, to_xl_ref
+
 
 # from 'GDP[t-1]' catches 't-1'
 T_ONLY_REGEX = r'\[([t+\-\d]+)\]'

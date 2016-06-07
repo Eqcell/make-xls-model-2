@@ -5,16 +5,16 @@ Created on Sun May 29 09:12:29 2016
 """
 
 import sys
+import os
 
 import numpy as np
 import pandas as pd
-
 import xlrd
+# TODO(dmu) HIGH: Move xlwings import to a separate module that is imported under Windows only
 from xlwings import Workbook, Range, Sheet
-import os
 
-from basefunc import to_rowcol
-from model import MathModel
+from xlsmodel.basefunc import to_rowcol
+from xlsmodel.model import MathModel
 
 
 class SheetImage(object):

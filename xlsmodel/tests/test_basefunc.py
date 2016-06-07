@@ -1,10 +1,11 @@
-from basefunc import col_to_num, to_xl_ref, to_rowcol
-from basefunc import is_equal
+from xlsmodel.basefunc import col_to_num, to_xl_ref, to_rowcol, is_equal
+
 
 def test_is_equal():
     # not tested
     pass
- 
+
+
 def test_basefunc():
     # Excel references
     assert col_to_num("A") == 1

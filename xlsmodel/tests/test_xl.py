@@ -1,7 +1,5 @@
-import os
-
-from basefunc import is_equal
-from xl import XlSheet
+from xlsmodel.basefunc import is_equal
+from xlsmodel.xl import XlSheet
  
 PATH = "test1.xls"
 

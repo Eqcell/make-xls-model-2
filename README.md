@@ -104,3 +104,16 @@ python xl.py test0.xls 1 A1
 python xl.py test0.xls sheet1 A1
 ```
 
+Installation for development
+----------------------------
+
+For Linux
+=========
+
+#. Fork https://github.com/epogrebnyak/make-xls-model-2
+#. Clone your fork (replace <username>): `git clone https://github.com/<username>/make-xls-model-2`
+#. Change directory: `cd make-xls-model-2`
+#. Install virtualenvwrapper
+#. Create virtualenv: `mkvirtualenv make-xls-model-2`
+#. Upgrade pip: `pip install -U pip`
+#. Install the package: `pip install -e .[xlsxwriter,xlrd]`
