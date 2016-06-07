@@ -6,12 +6,13 @@ Created on Sun May 29 09:12:29 2016
 
 import sys
 import os
+import argparse
 
-import numpy as np
-import pandas as pd
+import numpy
+import pandas
 import xlrd
 # TODO(dmu) HIGH: Move xlwings import to a separate module that is imported under Windows only
-from xlwings import Workbook, Range, Sheet
+#from xlwings import Workbook, Range, Sheet
 
 from xlsmodel.basefunc import to_rowcol
 from xlsmodel.model import MathModel
@@ -43,9 +44,9 @@ class SheetImage(object):
     def extract_dataframe(self):
         """Return a part of 'self.arr' starting anchor cell as dataframe.""" 
         data = self.arr[self.anchor_rowx:, self.anchor_colx:]
-        return pd.DataFrame(data=data[1:, 1:],    # values
-                            index=data[1:, 0],    # 1st column as index
-                            columns=data[0, 1:])    # 1st row as the column names
+        return pandas.DataFrame(data=data[1:, 1:],  # values
+                                index=data[1:, 0],  # 1st column as index
+                                columns=data[0, 1:])    # 1st row as the column names
 
     def insert_formulas(self):
         """Populate formulas on array representing Excel sheet."""        
@@ -140,7 +141,7 @@ class XlSheet(object):
     def read_sheet_as_array(filename, sheet):
         """Read sheet from an Excel file into an numpy's ndarray."""        
         sheet = XlSheet.get_xlrd_sheet(filename, sheet)        
-        array = np.empty((sheet.nrows,sheet.ncols), dtype=object)
+        array = numpy.empty((sheet.nrows, sheet.ncols), dtype=object)
         for row in range(sheet.nrows):
             for col in range(sheet.ncols):
                 value = sheet.cell(row, col).value
@@ -170,35 +171,39 @@ class XlSheet(object):
             
         # Workbook(path) seems to fail unless full path is provided
         abspath = get_abspath(filepath)        
-        wb = Workbook(abspath)
+        workbook = Workbook(abspath)
         # not todo: must check sheet_n exists and create it if not
         Sheet(sheet).activate()
         Range("A1").value = output_array  
-        wb.save()
+        workbook.save()
         return self 
 
 
-def cli():
-    """Simple command line interface to XlSheet(filepath, sheet, anchor).save()."""
-    if len(sys.argv) == 1:
-        raise Exception("Need at least one argument <filename>")
-    elif len(sys.argv) >= 2:
-        filename = sys.argv[1]
-        xl = XlSheet(filename)
-    elif len(sys.argv) == 3:
-        filename = sys.argv[1]
-        sheet = int(sys.argv[2])
-        xl = XlSheet(filename, sheet)
-    elif len(sys.argv) == 4:        
-        filename = sys.argv[1]
-        sheet = int(sys.argv[2])
-        anchor = sys.argv[3]
-        xl = XlSheet(filename, sheet, anchor)
-    xl = xl.save()
-    print("Updated formulas in " + filename + ":")
-    eqs = ["    " + k + " = " + v for k, v in xl.image.model.equations.items()]
-    for e in eqs:
-        print(e)    
+def main():
+    parser = argparse.ArgumentParser(description='Simple command line interface to '
+                                                 'XlSheet(filename, sheet, anchor).save()',
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('filename', help='path to xls-file')
+    parser.add_argument('sheet', nargs='?', default='1',
+                        help='string representing sheet name or 1-based sheet index')
+    parser.add_argument('anchor', nargs='?', default='A1',
+                        help='string with A1 style reference pointing to start of data block on '
+                             'sheet')
+
+    args = parser.parse_args()
+
+    filename = args.filename
+    try:
+        sheet = int(args.sheet)
+    except ValueError:
+        sheet = args.sheet
+
+    xl_sheet = XlSheet(filename, sheet, args.anchor)
+    xl_sheet = xl_sheet.save()
+    print('Updated formulas in {}:'.format(filename))
+    for k, v in xl_sheet.image.model.equations.items():
+        print('    {} = {}'.format(k, v))
+
 
 if __name__ == "__main__":
-    cli()
+    sys.exit(main())
