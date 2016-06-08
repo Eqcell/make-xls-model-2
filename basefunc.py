@@ -18,6 +18,7 @@ def col_to_num(col_str):
     return col_num
     
 def to_rowcol(xl_ref, base = 1):
+    xl_ref = xl_ref.upper()
     letters, b =  re.search(r'(\D+)(\d+)', xl_ref).groups()        
     return int(b) + (base-1), col_to_num(letters) + (base-1) 
     

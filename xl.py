@@ -34,16 +34,17 @@ class SheetImage():
         self.arr = arr
         self.anchor_rowx, self.anchor_colx = to_rowcol(anchor, base = 0)
 
-        self.dataset = self.extract_dataframe().transpose()
+        self.dataset = self.extract_dataframe(self.arr, self.anchor_rowx, self.anchor_colx).transpose()
         self.equations = self.pop_equations()
         self.var_to_rows = self.get_variable_locations_by_row(varlist=self.dataset.columns)
         self.model = MathModel(self.dataset, self.equations)\
                      .set_xl_positioning(self.var_to_rows, anchor)        
 
-    def extract_dataframe(self):
+    @staticmethod
+    def extract_dataframe(arr, anchor_rowx, anchor_colx):
         """Return a part of 'self.arr' starting anchor cell as dataframe.""" 
            
-        data = self.arr[self.anchor_rowx:,self.anchor_colx:]
+        data = arr[anchor_rowx:,anchor_colx:]
         
         return pd.DataFrame(data=data[1:,1:],    # values
                            index=data[1:, 0],    # 1st column as index
@@ -55,6 +56,7 @@ class SheetImage():
         column_with_labels = self.arr[:,self.anchor_colx]
         for rowx, label in enumerate(column_with_labels):
             if label in df.columns:
+                print(df[label])
                 self.arr[rowx,self.anchor_colx+1:] = df[label].as_matrix()
         return self
                          
@@ -72,12 +74,19 @@ class SheetImage():
         """Return list of strings containing equations. 
            Also cleans self.dataset off junk non-variable columns""" 
         equations = []        
+        
+        def drop(label):
+            if label in self.dataset.columns:
+                self.dataset = self.dataset.drop(label, 1)
+                
         for label in self.dataset.columns:
             if "=" in label:
                 equations.append(label)
-                self.dataset = self.dataset.drop(label, 1)
-            elif " " in label.strip():
-                self.dataset = self.dataset.drop(label, 1)
+                drop(label)
+            elif (" " in label.strip() 
+                  or label.startswith("#")
+                  or len(label) == 0):
+                drop(label)
         return equations       
 
    
