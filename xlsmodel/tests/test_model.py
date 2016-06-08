@@ -3,9 +3,9 @@
 import pandas as pd
 import numpy as np
 
-from basefunc import is_equal
-from model import FormulaSegment, Formula, MathModel  
-from xl import XlSheet
+from xlsmodel.basefunc import is_equal
+from xlsmodel.model import FormulaSegment, Formula, MathModel
+from xlsmodel.xl import XlSheet
 
 # test data     
 COLUMNS = ['is_forecast', 'y', 'rog']   
@@ -49,7 +49,7 @@ def test_math_model():
 
 
 def test_model_on_sheet():
-    from test_xl import PATH
+    from xlsmodel.tests.test_xl import PATH
     mos = XlSheet(PATH).image
     assert is_equal(mos.dataset, DF)
     assert mos.var_to_rows == VAR_TO_ROWS

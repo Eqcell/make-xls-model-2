@@ -1,0 +1,2 @@
+class ExcelBaseAdapter(object):
+    pass
