@@ -16,6 +16,10 @@ import xlrd
 
 from xlsmodel.basefunc import to_rowcol
 from xlsmodel.model import MathModel
+from xlsmodel.adapters.base import excel_factories_factory
+
+
+excel_read_objects_factory = excel_factories_factory.get_excel_read_objects_factory()
 
 
 class SheetImage(object):
@@ -90,7 +94,23 @@ class SheetImage(object):
                 drop(label)
         return equations       
 
-   
+
+def get_array_from_sheet(sheet):
+    """Return numpy's ndarray from sheet"""
+    # TODO(dmu) MEDIUM: Why do we need numpy array here? Why native Python lists are not enough?
+    array = numpy.empty((sheet.get_rows_number(), sheet.get_columns_number()), dtype=object)
+
+    for row in range(sheet.get_rows_number()):
+        for column in range(sheet.get_columns_number()):
+            value = sheet.get_cell(row, column).get_value()
+            # TODO(dmu) LOW: Why should we force ints?
+            # force type to 'int' where possible
+            if isinstance(value, float) and round(value) == value:
+                value = int(value)
+            array[row][column] = value
+    return array
+
+
 class XlSheet(object):
     """Access Excel file for reading sheet and saving sheet with formulas.
     
@@ -111,45 +131,18 @@ class XlSheet(object):
         self.input_sheet = sheet
         self.input_anchor = anchor 
 
+        # TODO(dmu) LOW: It is not a good idea to do something other than attributes
+        #                intialization in __init__() method
         arr = self.read_sheet_as_array(filepath, sheet)
+        print(arr)
         self.image = SheetImage(arr, anchor)
     
     @staticmethod
-    def get_xlrd_sheet(filename, sheet):
-       
-        contentstring = open(filename, 'rb').read()
-        book = xlrd.open_workbook(file_contents=contentstring)
-
-        def to_int(s):
-            try:
-                return int(s)
-            except ValueError:
-                return s
-
-        sheet = to_int(sheet)
-
-        if isinstance(sheet, int):
-            # if 'sheet' is integer, we assume 'sheet' is based at 1
-            sheet_x = sheet - 1
-            return book.sheet_by_index(sheet_x)
-        elif isinstance(sheet, str) and sheet in book.sheet_names():
-            return book.sheet_by_name(sheet)
-        else:
-            raise Exception("Failed to locate sheet :" + str(sheet))
-
-    @staticmethod
-    def read_sheet_as_array(filename, sheet):
+    def read_sheet_as_array(filename, sheet_index_or_name):
         """Read sheet from an Excel file into an numpy's ndarray."""        
-        sheet = XlSheet.get_xlrd_sheet(filename, sheet)        
-        array = numpy.empty((sheet.nrows, sheet.ncols), dtype=object)
-        for row in range(sheet.nrows):
-            for col in range(sheet.ncols):
-                value = sheet.cell(row, col).value
-                # force type to 'int' where possible
-                if isinstance(value, float) and round(value) == value:
-                    value = int(value)                
-                array[row][col] = value
-        return array
+        workbook = excel_read_objects_factory.get_workbook(filename)
+        sheet = workbook.get_sheet(sheet_index_or_name)
+        return get_array_from_sheet(sheet)
 
     def save(self, filepath=None, sheet=None):
 
@@ -184,6 +177,8 @@ def main():
                                                  'XlSheet(filename, sheet, anchor).save()',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('filename', help='path to xls-file')
+    # TODO(dmu) MEDIUM: It is a bad idea to allow different type in the same argument, because
+    #                   it make code more complex and less readable
     parser.add_argument('sheet', nargs='?', default='1',
                         help='string representing sheet name or 1-based sheet index')
     parser.add_argument('anchor', nargs='?', default='A1',
