@@ -5,7 +5,7 @@ import numpy as np
 
 from basefunc import is_equal
 from model import FormulaSegment, Formula, MathModel  
-from xl import XlSheet
+
 
 # test data     
 COLUMNS = ['is_forecast', 'y', 'rog']   
@@ -29,14 +29,17 @@ def test_segment():
     assert fs.xl_ref() == 'B5'
 
 def test_formula(): 
-    # formula strings converted to xl references     
+    # formula strings converted to xl references
+    # common arguments    
     pos = VAR_TO_ROWS, "A1"    
     # time period 1 + column offset 1 = B     
     assert "=B2" == Formula('is_forecast[t]', *pos).get_xl_formula(time_period=1)
     # time period 3 + column offset 1 = D
     assert '=C3*D4' == Formula('y[t-1] * rog', *pos).get_xl_formula(time_period=3) 
-    # testing whitespace stripped
+    # whitespace stripped
     assert "GDP[t]" == Formula("  GDP[t]  ", *pos).__repr__()
+    # same start of variable name
+    assert 'FondOT[t]+FondOther[t]' == Formula.expand_shorthand("FondOT+FondOther", {"FondOT":0,"FondOther":1})
     
 def test_math_model():
     # model with no Excel, local variables only
@@ -44,11 +47,3 @@ def test_math_model():
     m.set_xl_positioning(var_to_rows = VAR_TO_ROWS)
     assert is_equal(m.get_xl_dataset(), REF_DF)
     
-def test_model_on_sheet():
-    from test_xl import PATH
-    mos = XlSheet(PATH).image
-    assert is_equal(mos.dataset, DF)
-    assert mos.var_to_rows == VAR_TO_ROWS
-    assert mos.equations == EQS
-    assert mos.model.equations['y'] == 'y[t-1] * rog'
-    assert is_equal(REF_DF, mos.model.get_xl_dataset()) 

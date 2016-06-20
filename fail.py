@@ -1,21 +1,15 @@
 import os
-from xl import XlSheet
-     
-from model import Formula
+from xl import ExcelSheet
 
+   
+     
+def example_full_path(filename):
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), 'examples', filename)
+     
+path = example_full_path('bdrn.xls')
+xl = ExcelSheet(path, "model", "c1").save()
+xl.echo()
 
-# PROBLEM 1
-assert 'FondOT[t]+FondOther[t]' == Formula.expand_shorthand("FondOT+FondOther", {"FondOT":0,"FondOther":1})
-     
-     
-# PROBLEM 2     
-     
-d = os.path.dirname(os.path.abspath(__file__))
-path = os.path.join(d, 'examples', 'bdrn.xls')
-#xl = XlSheet(path, "model", "c1").save()
-arr = XlSheet.read_sheet_as_array(path, "model")
-xl = XlSheet(path, "model", "c1")
-xl.save()
 
 # PROBLEM 3
 # code above passes until .save, however, command line fails differently!!!

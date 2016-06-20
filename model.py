@@ -214,7 +214,6 @@ class MathModel():
     
     def _validate_math_model(self):                
         # Validating mathematic model:
-        assert 'is_forecast' in self.dataset.columns
         #    + check if enough data for equations were given
         #    + check if there are left-hand variables in equations without prior data 
         pass
