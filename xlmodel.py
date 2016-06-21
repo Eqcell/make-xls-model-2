@@ -333,27 +333,6 @@ def get_array_from_sheet(filename, sheet):
             array[row][col] = value
     return array              
 
-# # def write_array_to_sheet(filepath, sheet, arr):
-
-    # # def _make_abspath(filepath):      
-        # # folder = os.path.dirname(os.path.abspath(__file__))
-        # # if not os.path.split(filepath)[0]:
-            # 'filepath' was file name only  
-            # # return os.path.join(folder, filepath)
-        # # else:
-            # 'filepath' was long path
-            # # return filepath
-            
-    # Workbook(path) seems to fail unless full path is provided
-    # # path = _make_abspath(filepath)
-    # # if os.path.exists(path):
-        # # wb = Workbook(path)
-        # # Sheet(sheet).activate()
-        # # Range("A1").value = arr 
-        # # wb.save()
-    # # else:
-        # # raise FileNotFound(path)        
-
 def fullpath(path):
     
     # current directory
