@@ -322,7 +322,7 @@ def _get_xlrd_sheet(filename, sheet):
        raise Exception("Cannot find sheet :" + str(sheet))
        
 def get_array_from_sheet(filename, sheet):
-    sheet = get_xlrd_sheet(filename, sheet)       
+    sheet = _get_xlrd_sheet(filename, sheet)       
     array = np.empty((sheet.nrows,sheet.ncols), dtype=object)
     for row in range(sheet.nrows):
         for col in range(sheet.ncols):
