@@ -459,9 +459,9 @@ class ExcelSheet():
         return self
         
     def echo(self):
-        print("\n  File: " + self.target['path'])
-        print(  " Sheet: " + self.target['sheet']) 
-        print("\nUpdated formulas:")
+        print("\nFile:\n    " + self.target['path'])
+        print(  "Sheet:\n    " + str(self.target['sheet'])) 
+        print("Updated formulas:")
         eqs = ["    " + k + " = " + v  for k, v in self.model.equations.items()]
         for e in eqs:
             print(e)
