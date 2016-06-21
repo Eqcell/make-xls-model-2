@@ -42,17 +42,30 @@ Output Excel sheet:
 ```
 
 **Comments:**
+- all the magic is in D3 cell
 - 'year' is time label, it is not used in calculations 
 - 'is_forecast' denotes forecast time periods, it is 0 for historic periods, 1 for forecasted
 - 'y' is data variable
 - 'rog' (rate of growth) is control parameter
 - 'y = y[t-1] * rog' is formula (equation)
- 
+
+
+**Call example:**
+
 For call example see [fail.py](fail.py):
 
 ```python
 from xlmodel import ExcelSheet
 ExcelSheet("test0.xls").save().echo()
+```
+
+```
+File:
+    test0.xls
+Sheet:
+    1
+Updated formulas:
+    y = y[t-1] * rog
 ```
 
 Rules/requirements
@@ -61,8 +74,8 @@ Rules/requirements
  - data range starts next to variable labels and time labels
  - all control variables must be supplied on sheet
  - 'is_forecast' variable required in dataset, it is 0 for historic periods and 1 for forecast periods
- - '[t]' is reserved for indices
- -  time index for left hand-side variable is always [t] (not [t+1]) 
+ - ```[t]``` is reserved for indices
+ -  time index for left hand-side variable is always ```[t]``` (not ```[t+1]```) 
   
 Limitations
 -----------
