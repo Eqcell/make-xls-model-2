@@ -49,8 +49,13 @@ Comments:
 - 'rog' (rate of growth) is control parameter
 - 'y = y[t-1] * rog' is formula (equation)
  
-For call example see [fail.py](fail.py) 
- 
+For call example see [fail.py](fail.py):
+
+```python
+from xlmodel import ExcelSheet
+ExcelSheet("test0.xls").save().echo()
+```
+
 Rules/requirements
 ------------------
  - dataset has horizontal orientation - time series is in rows only 

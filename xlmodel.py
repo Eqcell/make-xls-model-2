@@ -308,7 +308,7 @@ class MathModel():
 #----------------------------------------------------------------------------------
 
        
-def get_xlrd_sheet(filename, sheet):
+def _get_xlrd_sheet(filename, sheet):
    
    contentstring = open(filename, 'rb').read()
    book = xlrd.open_workbook(file_contents=contentstring)
@@ -333,7 +333,7 @@ def get_array_from_sheet(filename, sheet):
             array[row][col] = value
     return array              
 
-def fullpath(path):
+def _fullpath(path):
     
     # current directory
     cur_dir = os.path.dirname(os.path.abspath(__file__))
@@ -345,7 +345,7 @@ def fullpath(path):
 
 def write_array_to_sheet(filepath, sheet, arr):
 
-    path = fullpath(filepath) # Workbook(path) seems to fail unless full path is provided
+    path = _fullpath(filepath) # Workbook(path) seems to fail unless full path is provided
     if os.path.exists(path):
         wb = Workbook(path)
         Sheet(sheet).activate()

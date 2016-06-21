@@ -1,9 +1,5 @@
 import os
 from xlmodel import ExcelSheet
-     
-# def example_full_path(filename):
-    # return os.path.join(os.path.dirname(os.path.abspath(__file__)), 'examples', filename)
-     
-# path = example_full_path('bdrn.xls')
-path = os.path.join('examples', 'bdrn.xls')
-ExcelSheet(path, "model", "c1").save().echo()
+
+ExcelSheet("test0.xls").save().echo()
+ExcelSheet(os.path.join('examples', 'bdrn.xls'), "model", "c1").save().echo()
