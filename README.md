@@ -7,55 +7,19 @@ Requirements
 User story
 ----------
   - the user wants to automate filling formulas on Excel sheet
-  - Excel sheet has simple 'roll forward' forecast - a spreadsheet model with some 
-    historic values for variables and some control parameters for forecast values (e.g. rates of growth) 
-  - equations link control parameters and variables previous' period historic values to forecast values
-  - equations are written down in excel sheet as text strings like ```y = y[t-1] * rog```
+  - Excel sheet has simple 'roll forward' forecast
+  - equations link forecast values to observed values by use of control parameters 
+  - equations are written down in Excel sheet as text strings like ```y = y[t-1] * rog```
+  - the script fills cells in Excel sheet with formulas (e.g. '=C3*D4') where applicabple
+  - formulas go only to forecast periods columns
 
 The benefits
 ------------
   - all formulas for spreadsheet model are written down explicitly as visible text and not just hidden in cells
-  - formulas in cells are filled in the same way the user could have done it, resulting file has no extra dependencies
-  - one can easily see all control variables that govern the forecast
-
-Terms used
-----------
-- spreadsheet model
-- 'roll-forward' forecast
-- equation - formulas like ```y = y[t-1] * rog```
-- control variables, controls - variables on right-hand side of equations, which do no appear on left side (e.g ```rog```)
-- dependent variables, dependents - variables on the left-hand side of equations (e.g ```rog```)
-
-
-Rules/requirements
-------------------
- - time series in rows only, dataset has horizontal orientation 
- - data range starts next to variable labels and time labels
- - all control variables must be supplied on sheet
- - 'is_forecast' variable required in dataset, it is 0 for historic periods and 1 for forecast periods
- - '[t]' is reserved for indeces
- -  time index for left hand-side variable is always [t] (not [t+1]) 
-  
-Limitations
------------
-- one sheet only, no multi-sheet models supported
-- variable appears on sheet only once
-
-**To change:**
-- no equations for historic variables
-- reads 'xls' files only
-- does not create new output files, writing to existing only
- 
-What the script does 
---------------------
-- fill cells in Excel sheet with formulas (e.g. '=C3*D4') based on list of variable names and equations
-- formulas go only to forecast periods columns (where is_forecast == 1) 
+  - resulting file has no extra dependencies - formulas in cells are filled in the same way the user could have done it
 
 Example
 -------
-
-Excel file ```xl.xls``` has following contents:
-
 ```
 Input Excel sheet:
 -------------------------------
@@ -84,28 +48,31 @@ Comments:
 - 'y' is data variable
 - 'rog' (rate of growth) is control parameter
 - 'y = y[t-1] * rog' is formula (equation)
+ 
+For call example see [fail.py](fail.py) 
+ 
+Rules/requirements
+------------------
+ - dataset has horizontal orientation - time series is in rows only 
+ - data range starts next to variable labels and time labels
+ - all control variables must be supplied on sheet
+ - 'is_forecast' variable required in dataset, it is 0 for historic periods and 1 for forecast periods
+ - '[t]' is reserved for indices
+ -  time index for left hand-side variable is always [t] (not [t+1]) 
+  
+Limitations
+-----------
+- one sheet only, no multi-sheet models supported
+- variable appears on sheet only once
 
-
-Call example
-------------
-
-todo:
----------------------------------
-
-```
-python xl.py xl.xls
-python xl.py xl.xls input_sheet
-python xl.py xl.xls xl_out.xls output_sheet
-python xl.py xl.xls 1 xl_out.xls output_sheet
-python xl.py xl.xls 1 xl_out.xls 3
-
-```
-sheet names cannot have names ending .xls 
-consider second argument
-third is always file name
-is_xl(filname): check extension and file exists
-digits are always numbers
-how to specifiy string '1' as sheet name?
-1 and 1 are defaults for sheet numbers
-
------------------------------------
+**To change:**
+- no equations for historic variables
+- reads 'xls' files only
+- does not create new output files, writing to existing only
+ 
+Terms used
+----------
+- **spreadsheet model**, **'roll-forward' forecast**
+- **equation - formula like ```y = y[t-1] * rog```
+- **control variables, controls** - variables on right-hand side of equations, which do no appear on left side (e.g ```rog```)
+- **dependent variables, dependents** - variables on the left-hand side of equations (e.g ```y```)

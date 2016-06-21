@@ -43,8 +43,7 @@ from collections import OrderedDict
 import re
 import xlrd
 from xlwings import Workbook, Range, Sheet
-
-# REMOVE
+import argparse
 import os
 
 
@@ -334,26 +333,48 @@ def get_array_from_sheet(filename, sheet):
             array[row][col] = value
     return array              
 
-def write_array_to_sheet(filepath, sheet, arr):
+# # def write_array_to_sheet(filepath, sheet, arr):
 
-    def _make_abspath(filepath):      
-        folder = os.path.dirname(os.path.abspath(__file__))
-        if not os.path.split(filepath)[0]:
+    # # def _make_abspath(filepath):      
+        # # folder = os.path.dirname(os.path.abspath(__file__))
+        # # if not os.path.split(filepath)[0]:
             # 'filepath' was file name only  
-            return os.path.join(folder, filepath)
-        else:
+            # # return os.path.join(folder, filepath)
+        # # else:
             # 'filepath' was long path
-            return filepath
+            # # return filepath
             
     # Workbook(path) seems to fail unless full path is provided
-    path = _make_abspath(filepath)
+    # # path = _make_abspath(filepath)
+    # # if os.path.exists(path):
+        # # wb = Workbook(path)
+        # # Sheet(sheet).activate()
+        # # Range("A1").value = arr 
+        # # wb.save()
+    # # else:
+        # # raise FileNotFound(path)        
+
+def fullpath(path):
+    
+    # current directory
+    cur_dir = os.path.dirname(os.path.abspath(__file__))
+
+    if os.path.normcase(os.path.normpath(path)).startswith(cur_dir):
+       return path
+    else:
+       return os.path.join(cur_dir, path)
+
+def write_array_to_sheet(filepath, sheet, arr):
+
+    path = fullpath(filepath) # Workbook(path) seems to fail unless full path is provided
     if os.path.exists(path):
         wb = Workbook(path)
         Sheet(sheet).activate()
         Range("A1").value = arr 
         wb.save()
     else:
-        raise FileNotFound(path)        
+        raise FileNotFound(path) 
+   
 
 class ExcelSheet():
 
@@ -466,3 +487,28 @@ class ExcelSheet():
         for e in eqs:
             print(e)
         return self
+        
+def cli():
+    """Command line interface to XlSheet(filepath, sheet, anchor).save()"""
+    
+    parser = argparse.ArgumentParser(description='Command line interface to XlSheet(filename, sheet, anchor).save()',
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('filename',                        help='filename or path to .xls file')
+    parser.add_argument('sheet',  nargs='?', default=1,  help='sheet name or sheet index starting at 1')
+    parser.add_argument('anchor', nargs='?', default='A1', help='reference to upper-left corner of data block, defaults to A1')
+    
+    args = parser.parse_args()
+
+    filename = args.filename
+    anchor = args.anchor
+
+    try:
+        sheet = int(args.sheet)
+    except ValueError:
+        sheet = args.sheet
+   
+    xl = ExcelSheet(filename, sheet, anchor).save()
+    xl.echo()
+
+if __name__ == "__main__":
+    cli()       
