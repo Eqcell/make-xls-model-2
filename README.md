@@ -13,8 +13,7 @@ User story
   - the script fills cells in Excel sheet with formulas (e.g. '=C3*D4') where applicabple
   - formulas go only to forecast periods columns
 
-The benefits
-------------
+**The benefits:**
   - all formulas for spreadsheet model are written down explicitly as visible text and not just hidden in cells
   - resulting file has no extra dependencies - formulas in cells are filled in the same way the user could have done it
 
@@ -42,7 +41,7 @@ Output Excel sheet:
 --------------------------------
 ```
 
-Comments:
+**Comments:**
 - 'year' is time label, it is not used in calculations 
 - 'is_forecast' denotes forecast time periods, it is 0 for historic periods, 1 for forecasted
 - 'y' is data variable
