@@ -3,7 +3,7 @@ import numpy as np
 
 from xlmodel import col_to_num, to_xl_ref, to_rowcol
 from xlmodel import FormulaSegment, Formula, MathModel  
-from xlmodel import ExcelSheet, get_xlrd_sheet
+from xlmodel import ExcelSheet, _get_xlrd_sheet
 
 from xlmodel import is_equal
 
@@ -85,8 +85,8 @@ def test_model_on_sheet():
     
 def read_by_name_and_int():
 
-    assert SHEET_NAME == get_xlrd_sheet(PATH, 1).name
-    assert SHEET_NAME == get_xlrd_sheet(PATH, sh_name).name
+    assert SHEET_NAME == _get_xlrd_sheet(PATH, 1).name
+    assert SHEET_NAME == _get_xlrd_sheet(PATH, sh_name).name
    
 def test_xl_sheet_end_to_end():        
     
