@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 import numpy as np
 
@@ -97,3 +98,19 @@ def test_xl_sheet_end_to_end():
     df4 = ExcelSheet(PATH, sheet=4, anchor="B3").dataset  
     
     assert is_equal(df3, df4)
+
+def run_example(filename, sheet=1, anchor="c1"):
+    ExcelSheet(os.path.join('examples', filename), sheet, anchor).save()#.echo()
+    
+def test_examples_folder():
+
+    ExcelSheet("test0.xls").save()
+    ExcelSheet("test1.xls", 1, "A1").save(sheet=3)
+    ExcelSheet("test1.xls", 2, "B3").save(sheet=4)
+
+    run_example('bdrn.xls')
+    run_example('ref_file.xls')
+    run_example('spec.xls')
+    run_example('spec2.xls')
+    run_example('bank.xls')
+    run_example('bank_sector.xls')

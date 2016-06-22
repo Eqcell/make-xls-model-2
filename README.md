@@ -10,7 +10,7 @@ User story
   - Excel sheet has simple 'roll forward' forecast
   - equations link forecast values to observed values by use of control parameters 
   - equations are written down in Excel sheet as text strings like ```y = y[t-1] * rog```
-  - the script fills cells in Excel sheet with formulas (e.g. '=C3*D4') where applicabple
+  - the script fills cells in Excel sheet with formulas (e.g. ```=C3*D4```) where applicabple
   - formulas go only to forecast periods columns
 
 **The benefits:**
@@ -48,17 +48,15 @@ Output Excel sheet:
 - 'y' is data variable
 - 'rog' (rate of growth) is control parameter
 - 'y = y[t-1] * rog' is formula (equation)
-
+- the file is [test0.xls](test0.xls)
 
 **Call example:**
-
-For call example see [fail.py](fail.py):
-
 ```python
 from xlmodel import ExcelSheet
 ExcelSheet("test0.xls").save().echo()
 ```
 
+**Output:**
 ```
 File:
     test0.xls
@@ -70,12 +68,12 @@ Updated formulas:
 
 Rules/requirements
 ------------------
- - dataset has horizontal orientation - time series is in rows only 
- - data range starts next to variable labels and time labels
- - all control variables must be supplied on sheet
- - 'is_forecast' variable required in dataset, it is 0 for historic periods and 1 for forecast periods
- - ```[t]``` is reserved for indices
- -  time index for left hand-side variable is always ```[t]``` (not ```[t+1]```) 
+- dataset has horizontal orientation - time series is in rows only 
+- data range starts next to variable labels and time labels
+- all control variables must be supplied on sheet
+- 'is_forecast' variable required in dataset, it is 0 for historic periods and 1 for forecast periods
+- ```[t]``` is reserved for indices
+- time index for left hand-side variable is always ```[t]``` (not ```[t+1]```) 
   
 Limitations
 -----------
@@ -89,7 +87,16 @@ Limitations
  
 Terms used
 ----------
-- **spreadsheet model**, **'roll-forward' forecast**
-- **equation - formula like ```y = y[t-1] * rog```
-- **control variables, controls** - variables on right-hand side of equations, which do no appear on left side (e.g ```rog```)
-- **dependent variables, dependents** - variables on the left-hand side of equations (e.g ```y```)
+- *spreadsheet model, 'roll-forward' forecast*
+- *equation* - formula like ```y = y[t-1] * rog```
+- *control variables, controls* - variables on right-hand side of equations, which do no appear on left side (e.g ```rog```)
+- *dependent variables, dependents* - variables on the left-hand side of equations (e.g ```y```)
+
+ 
+Developement notes
+------------------
+- tested on 'examples' folder
+- 'fail.py' used as launcher
+- need #h for historic equations
+- need write eq, data, param blocks from one sheet + assemble pretty sheet from blocks (as in https://github.com/epogrebnyak/make-xls-model) 
+- restore tests for variables

@@ -382,30 +382,36 @@ class ExcelSheet():
         anchor : string with A1 style reference, defaults to "A1"
         """ 
         
+        print(filepath)
         self.source = {'path':filepath, 'sheet':sheet, 'anchor':anchor}
         self.arr = get_array_from_sheet(filepath, sheet)
         self.anchor_rowx, self.anchor_colx = to_rowcol(anchor, base = 0)
 
         self.dataset = self.extract_dataframe(self.arr, self.anchor_rowx, self.anchor_colx).transpose()
-        self.check_dataset()
         self.equations = self.pop_equations()
+        self.check_dataset_after_equations()
         self.var_to_rows = self.get_variable_locations_by_row()
         self.model = MathModel(self.dataset, self.equations).set_xl_positioning(self.var_to_rows, anchor) 
         self.insert_formulas()
     
-    def check_dataset(self):
-        if not 'is_forecast' in self.dataset.columns:
-             print("Datset columns:\n", self.dataset.columns) 
-             print("\nAnchor cell row and column:\n", self.anchor_rowx, self.anchor_colx) 
-             raise ValueError("Row 'is_forecast' not found in dataframe.\nPossible reason - wrong anchor cell.")     
+    def check_dataset_after_equations(self):
+
+        labs = list(self.dataset.columns)
+        dups = [x for x in labs if labs.count(x) > 1]
+        if len(dups) > 0:
+            self.echo_diagnostics()
+            raise ValueError("Duplicate labels: " + ", ".join(dups))            
+    
+        if not 'is_forecast' in labs:
+            self.echo_diagnostics()
+            raise ValueError("Row 'is_forecast' not found in dataframe (possible reason - wrong anchor cell.)")  
+     
                      
     @staticmethod
     def extract_dataframe(arr, anchor_rowx, anchor_colx):
         """Return a part of 'self.arr' starting anchor cell as dataframe.""" 
            
         data = arr[anchor_rowx:,anchor_colx:]
-        #
-        
         return pd.DataFrame(data=data[1:,1:],    # values
                            index=data[1:, 0],    # 1st column as index
                          columns=data[0 ,1:])    # 1st row as the column names
@@ -466,6 +472,14 @@ class ExcelSheet():
         for e in eqs:
             print(e)
         return self
+        
+    def echo_diagnostics(self):
+        print("File:\n    ", self.source['path'])
+        print("Sheet:\n    ", str(self.source['sheet']))            
+        print("Anchor row and column:\n    ", self.anchor_rowx, self.anchor_colx)             
+        print("Dataset columns:\n    ", self.dataset.columns) 
+    
+    
         
 def cli():
     """Command line interface to XlSheet(filepath, sheet, anchor).save()"""
