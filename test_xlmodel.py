@@ -5,27 +5,7 @@ import numpy as np
 from xlmodel import col_to_num, to_xl_ref, to_rowcol
 from xlmodel import FormulaSegment, Formula, MathModel  
 from xlmodel import ExcelSheet, _get_xlrd_sheet
-
 from xlmodel import is_equal
-
-
-def test_is_equal():
-    # not tested
-    pass
- 
-def test_basefunc():
-    # Excel references
-    assert col_to_num("A") == 1
-    assert col_to_num("B") == 2
-    assert to_xl_ref(1, 1) == "A1"
-    assert to_xl_ref(1, 1, base = 1) == "A1"
-    assert to_xl_ref(0, 0, base = 0) == "A1"    
-    assert to_rowcol("A1") == (1, 1)
-    assert to_rowcol("A1", base = 0) == (0, 0)
-    assert to_rowcol("AA1") == (1, 27)
-    
-   
-# tests model.py and some of xl.py
 
 # test data     
 COLUMNS = ['is_forecast', 'y', 'rog']   
@@ -39,15 +19,32 @@ EQS = ['y = y[t-1] * rog']
 REF_DF = DF.copy()
 REF_DF.loc[2016,'y'] = '=C3*D4'
 
+PATH = "test1.xls"
+SHEET_NAME = 'input_sheet_v1'
+
+ 
+def test_basefunc():
+    # Excel references
+    assert col_to_num("A") == 1
+    assert col_to_num("B") == 2
+    assert to_xl_ref(1, 1) == "A1"
+    assert to_xl_ref(1, 1, base = 1) == "A1"
+    assert to_xl_ref(0, 0, base = 0) == "A1"    
+    assert to_rowcol("A1") == (1, 1)
+    assert to_rowcol("A1", base = 0) == (0, 0)
+    assert to_rowcol("AA1") == (1, 27)
+
+
 def test_segment():
-    # (varname + time period) segment 
-    # test segment "GDP[1]" conversion to 'B5' 
-    fs = FormulaSegment("GDP[1]", {'GDP':5}, anchor = "A1")    
+    # segment contains varname and time period  
+    # test segment "GDP[1]" conversion to 'D5' 
+    fs = FormulaSegment("GDP[1]", {'GDP':5}, anchor = "C2")    
     assert fs.col == 1
     assert fs.row == 5
-    assert fs.column_offset == 1
-    assert fs.xl_ref() == 'B5'
+    assert fs.column_offset == 3 # C is column 3
+    assert fs.xl_ref() == 'D5'
 
+    
 def test_formula(): 
     # formula strings converted to xl references
     # common arguments    
@@ -61,15 +58,15 @@ def test_formula():
     # same start of variable name
     assert 'FondOT[t]+FondOther[t]' == Formula.expand_shorthand("FondOT+FondOther", {"FondOT":0,"FondOther":1})
     
+    
 def test_math_model():
     # model with no Excel, local variables only
     m = MathModel(equations = EQS, dataset = DF)
     m.set_xl_positioning(var_to_rows = VAR_TO_ROWS)
     assert is_equal(m.get_xl_dataset(), REF_DF)
     
-PATH = "test1.xls"
-SHEET_NAME = 'input_sheet_v1'
-   
+#-------------------
+    
 def test_xl_sheet_reading():    
     
     df1 = ExcelSheet(PATH, sheet=1, anchor="A1").dataset
@@ -88,6 +85,8 @@ def read_by_name_and_int():
 
     assert SHEET_NAME == _get_xlrd_sheet(PATH, 1).name
     assert SHEET_NAME == _get_xlrd_sheet(PATH, sh_name).name
+   
+# ------------------   
    
 def test_xl_sheet_end_to_end():        
     

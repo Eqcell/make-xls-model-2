@@ -359,17 +359,17 @@ class ExcelSheet():
 
     """
 
-    Access Excel file for reading sheet and saving sheet with formulas.
+    Access Excel file for reading sheet and saving sheet with new formulas.
     
     Notes
     -----
     - Operates on numpy array *self.arr* representing cells in Excel sheet. 
-    - Uses MathModel class to populate formulas.   
+    - Uses MathModel class to update formulas.   
     
     Methods
     -------
-    .insert_formulas() method populates cells in forecast periods with Excel-style formulas. 
-    .save() will read first sheet of Excel file and populate it with formulas.
+    .insert_formulas() - populate cells in forecast periods with Excel-style formulas. 
+    .save() - update formulas and saves Excel file.
 
     """
     
@@ -378,8 +378,8 @@ class ExcelSheet():
         Inputs
         ------
         filepath : valid path to Excel file, xls only, xlsx not supported
-        sheet: string or integer >=1, representing sheet name or number starting at 1, defaults to first sheet 
-        anchor : string with A1 style reference, defaults to "A1"
+            sheet: string or integer >=1, representing sheet name or number starting at 1, defaults to first sheet 
+          anchor : string with A1 style reference, defaults to "A1"
         """ 
         
         print(filepath)
@@ -392,6 +392,8 @@ class ExcelSheet():
         self.check_dataset_after_equations()
         self.var_to_rows = self.get_variable_locations_by_row()
         self.model = MathModel(self.dataset, self.equations).set_xl_positioning(self.var_to_rows, anchor) 
+        
+        # update formulas on sheet
         self.insert_formulas()
     
     def check_dataset_after_equations(self):
@@ -404,8 +406,7 @@ class ExcelSheet():
     
         if not 'is_forecast' in labs:
             self.echo_diagnostics()
-            raise ValueError("Row 'is_forecast' not found in dataframe (possible reason - wrong anchor cell.)")  
-     
+            raise ValueError("Row 'is_forecast' not found in dataframe (possible reason - wrong anchor cell).")       
                      
     @staticmethod
     def extract_dataframe(arr, anchor_rowx, anchor_colx):
@@ -428,7 +429,7 @@ class ExcelSheet():
         
     def pop_equations(self):       
         """Return list of strings containing equations. 
-           Also cleans self.dataset off junk non-variable columns""" 
+           Also cleans out junk non-variable columns from self.dataset.""" 
         equations = []        
         
         def drop(label):
@@ -482,26 +483,26 @@ class ExcelSheet():
     
         
 def cli():
-    """Command line interface to XlSheet(filepath, sheet, anchor).save()"""
+    """Command line interface to ExcelSheet(filepath, sheet, anchor).save()"""
     
     parser = argparse.ArgumentParser(description='Command line interface to XlSheet(filename, sheet, anchor).save()',
-                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+                                                           formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('filename',                        help='filename or path to .xls file')
-    parser.add_argument('sheet',  nargs='?', default=1,  help='sheet name or sheet index starting at 1')
+    parser.add_argument('sheet',  nargs='?', default=1,    help='sheet name or sheet index starting at 1')
     parser.add_argument('anchor', nargs='?', default='A1', help='reference to upper-left corner of data block, defaults to A1')
     
+    # get arguements
     args = parser.parse_args()
-
     filename = args.filename
     anchor = args.anchor
-
     try:
         sheet = int(args.sheet)
     except ValueError:
         sheet = args.sheet
    
-    xl = ExcelSheet(filename, sheet, anchor).save()
-    xl.echo()
-
+    xl = ExcelSheet(filename, sheet, anchor)
+    xl.save().echo()
+    return xl
+    
 if __name__ == "__main__":
     cli()       

@@ -91,7 +91,6 @@ Terms used
 - *equation* - formula like ```y = y[t-1] * rog```
 - *control variables, controls* - variables on right-hand side of equations, which do no appear on left side (e.g ```rog```)
 - *dependent variables, dependents* - variables on the left-hand side of equations (e.g ```y```)
-
  
 Developement notes
 ------------------
